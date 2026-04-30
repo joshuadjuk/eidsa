@@ -108,6 +108,7 @@ async function selectWorkspace(id) {
   if (cached) {
     state.analysisData = cached.data;
     renderAnalysis();
+    if (cached.data?.eventsLimited) bgLoadEvents(ws.id, cached.data.total);
     const btnExport = document.getElementById('btn-export-pdf');
     if (btnExport) btnExport.style.display = '';
     const btnExecC = document.getElementById('btn-exec-summary');
@@ -331,11 +332,22 @@ async function runAnalysis() {
     state.activeTab = 'dashboard';
     renderAnalysis();
     if (state.analysisData.eventsLimited) {
-      toast(`Large dataset: detections run on all ${state.analysisData.total.toLocaleString()} events, events table shows top 50,000 (Interactive & App first).`, 'warn');
+      bgLoadEvents(wsId, state.analysisData.total);
     }
     // Fetch cross-workspace IP correlations in background
     api('GET', `/api/ip-correlation/${state.activeWorkspace.id}`)
       .then(corr => { state.correlationData = corr; renderCorrelationPanel(); })
+      .catch(() => {});
+    // Fetch IP enrichment in background (decoupled from main analysis so it doesn't block)
+    const _wsIdEnrich = state.activeWorkspace.id;
+    api('GET', `/api/workspaces/${_wsIdEnrich}/enrich`)
+      .then(d => {
+        if (!d.ipEnrichment || !state.analysisData) return;
+        state.analysisData.ipEnrichment = d.ipEnrichment;
+        // Re-render any open IP pivots so they pick up the new data
+        const pivotIp = document.querySelector('.ip-pivot-panel [data-ip]');
+        if (pivotIp) openIPPivot(pivotIp.dataset.ip);
+      })
       .catch(() => {});
     const btnExport = document.getElementById('btn-export-pdf');
     if (btnExport) btnExport.style.display = '';
@@ -1415,7 +1427,18 @@ function renderEventsTable(allEvents) {
       </tr>`;
   }).join('');
 
+  const totalAvailable = state.analysisData?.total || allEvents.length;
+  const loadedCount = allEvents.length;
+  const stillLoading = state.analysisData?.eventsLimited && loadedCount < totalAvailable;
+  const loadingBar = stillLoading
+    ? `<div id="events-load-progress" style="font-size:12px;color:var(--text2);padding:4px 0 2px;display:flex;align-items:center;gap:8px">
+        <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
+        Loading events… ${loadedCount.toLocaleString()} / ${totalAvailable.toLocaleString()} loaded
+       </div>`
+    : `<div id="events-load-progress" style="display:none"></div>`;
+
   return `
+    ${loadingBar}
     <div class="events-filter">
       <input type="text" placeholder="Search user, IP, country, app…" value="${escHtml(state.eventsFilter)}"
         oninput="filterEvents(this.value)" />
@@ -1449,7 +1472,7 @@ function renderEventsTable(allEvents) {
     </div>
     <div class="pagination">
       <button onclick="changePage(-1)" ${state.eventsPage === 1 ? 'disabled' : ''}>← Prev</button>
-      <span>Page ${state.eventsPage} of ${pages} (${total.toLocaleString()} events — click row for timeline)</span>
+      <span>Page ${state.eventsPage} of ${pages} (${total.toLocaleString()} shown${stillLoading ? ` · ${totalAvailable.toLocaleString()} total` : ''} — click row for timeline)</span>
       <button onclick="changePage(1)" ${state.eventsPage === pages ? 'disabled' : ''}>Next →</button>
     </div>`;
 }
@@ -2473,6 +2496,35 @@ async function deleteWorkspace() {
   } catch (e) {
     toast(e.message, 'err');
   }
+}
+
+/* ── Background event loader ─────────────────────────────────────────────── */
+async function bgLoadEvents(wsId, total) {
+  const BATCH = 5000;
+  let offset = (state.analysisData?.events || []).length;
+  while (offset < total) {
+    if (state.activeWorkspace?.id !== wsId || !state.analysisData) return;
+    try {
+      const res = await api('GET', `/api/workspaces/${wsId}/events?offset=${offset}&limit=${BATCH}`);
+      if (!res.events?.length) break;
+      if (state.activeWorkspace?.id !== wsId || !state.analysisData) return;
+      state.analysisData.events = [...(state.analysisData.events || []), ...res.events];
+      offset += res.events.length;
+      updateEventsProgress(state.analysisData.events.length, total);
+      if (state.activeTab === 'events') rerenderTable();
+    } catch (e) {
+      break;
+    }
+  }
+  updateEventsProgress(null, null); // clear progress
+}
+
+function updateEventsProgress(loaded, total) {
+  const el = document.getElementById('events-load-progress');
+  if (!el) return;
+  if (loaded === null) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.textContent = `Loading events… ${loaded.toLocaleString()} / ${total.toLocaleString()}`;
 }
 
 /* ── Cross-workspace IP correlation ──────────────────────────────────────── */

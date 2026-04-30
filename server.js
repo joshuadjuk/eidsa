@@ -9,6 +9,8 @@ const fs   = require('fs');
 const ipCache  = {};                          // ip → { data, ts }
 const IP_TTL   = 24 * 60 * 60 * 1000;        // 24 h
 
+const HTTP_TIMEOUT_MS = 6000; // per-request timeout for external calls
+
 function httpPost(host, urlPath, body) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
@@ -21,17 +23,25 @@ function httpPost(host, urlPath, body) {
         res.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { reject(e); } });
       }
     );
+    req.setTimeout(HTTP_TIMEOUT_MS, () => req.destroy(new Error('ip-api timeout')));
     req.on('error', reject);
     req.write(data);
     req.end();
   });
 }
 
+const ENRICH_DEADLINE_MS = 10000; // max total time for all enrichment batches
+
 async function enrichIPs(ips) {
-  const now     = Date.now();
-  const toFetch = ips.filter(ip => !ipCache[ip] || now - ipCache[ip].ts > IP_TTL);
+  const now      = Date.now();
+  const deadline = now + ENRICH_DEADLINE_MS;
+  const toFetch  = ips.filter(ip => !ipCache[ip] || now - ipCache[ip].ts > IP_TTL);
 
   for (let i = 0; i < toFetch.length; i += 100) {
+    if (Date.now() >= deadline) {
+      console.warn('IP enrichment deadline reached, skipping remaining batches');
+      break;
+    }
     const chunk = toFetch.slice(i, i + 100);
     try {
       const fields  = 'status,message,query,isp,org,as,proxy,hosting,mobile';
@@ -327,13 +337,26 @@ function parseJSONSafe(str, filename) {
 
 // ─── Analysis route ───────────────────────────────────────────────────────────
 
-// Max events sent to the browser — detections run on ALL events, but the UI
-// only receives the most relevant subset to avoid browser/memory exhaustion.
-const MAX_EVENTS_RESPONSE = 50_000;
+// First batch of events returned in the analyze response.
+// Detections run on ALL events. Remaining events are fetched via /events endpoint.
+const EVENTS_FIRST_BATCH = 5_000;
 
-// Priority order for capping: interactive first, then app, then non-interactive/MSI last
+// Priority order: interactive first, then app, then non-interactive/MSI last
 const APPTYPE_PRIORITY = { Interactive: 0, 'Mobile/Desktop': 1, Admin: 2, Legacy: 3, Other: 4, 'Non-Interactive': 5, Service: 6 };
 function eventPriority(e) { return APPTYPE_PRIORITY[e.appType] ?? 4; }
+
+// In-memory cache — keyed by workspaceId.
+// Stores sorted events + full analysis so unchanged files are served instantly.
+const eventsCache = {}; // wsId → { events: [], ts: number, filesSig: string, result: {} }
+
+function getFilesSig(dir) {
+  if (!fs.existsSync(dir)) return '';
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith('.json'))
+    .sort()
+    .map(f => { const s = fs.statSync(path.join(dir, f)); return `${f}:${s.size}:${s.mtimeMs}`; })
+    .join('|');
+}
 
 app.get('/api/workspaces/:id/analyze', async (req, res) => {
   try {
@@ -343,6 +366,14 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
     const dir = path.join(UPLOADS_DIR, req.params.id);
     if (!fs.existsSync(dir)) return res.json({ events: [], detections: [] });
 
+    // Return cached result instantly if files haven't changed since last analysis
+    const filesSig = getFilesSig(dir);
+    const hit = eventsCache[req.params.id];
+    if (hit && hit.filesSig === filesSig && hit.result) {
+      console.log(`[analyze] ${req.params.id}: cache hit — serving instantly`);
+      return res.json({ ...hit.result, events: hit.events.slice(0, EVENTS_FIRST_BATCH) });
+    }
+
     const { runDetections } = require('./lib/detections');
     const { normalizeEvents } = require('./lib/parser');
     const { buildUserSummaries, buildAttackTimeline } = require('./lib/summary');
@@ -351,8 +382,22 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
     const allEvents     = [];
     const parseWarnings = [];
     for (const filename of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+      const filepath = path.join(dir, filename);
       try {
-        const raw    = fs.readFileSync(path.join(dir, filename), 'utf8');
+        // Peek at the first 8 KB to detect managedIdentity files before full parse.
+        // managedIdentity (MSI) sign-ins are machine-to-machine within Azure infrastructure
+        // and provide zero signal for any of the current 18 detection rules — safe to skip.
+        const buf = Buffer.allocUnsafe(8192);
+        const fd  = fs.openSync(filepath, 'r');
+        const n   = fs.readSync(fd, buf, 0, 8192, 0);
+        fs.closeSync(fd);
+        if (buf.slice(0, n).toString().includes('"managedIdentity"')) {
+          console.log(`[analyze] Skipping ${filename} (managedIdentity — not used in current detection rules)`);
+          parseWarnings.push({ file: filename, skipped: true, reason: 'managedIdentity' });
+          continue;
+        }
+
+        const raw    = fs.readFileSync(filepath, 'utf8');
         const parsed = parseJSONSafe(raw, filename);
         const events = Array.isArray(parsed) ? parsed : (parsed.value || []);
         for (const e of events) {
@@ -399,14 +444,6 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
       JSON.stringify({ ips: ipIndex, ts: Date.now(), workspaceName: meta.name })
     );
 
-    // Enrich attacking IPs via ip-api.com (free, no key, batch up to 100)
-    const attackingIPs = [...new Set(
-      normalized
-        .filter(e => e.ipAddress && e.country && e.country.toUpperCase() !== homeCountry)
-        .map(e => e.ipAddress)
-    )].slice(0, 300);
-    const ipEnrichment = await enrichIPs(attackingIPs).catch(() => ({}));
-
     // Dashboard summaries
     const userSummaries  = buildUserSummaries(normalized, detections, homeCountry);
     const attackTimeline = buildAttackTimeline(normalized, homeCountry);
@@ -418,29 +455,32 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
           .filter(u => breachList.includes(u.toLowerCase()))
       : [];
 
-    // Cap events sent to browser — sort by priority so most-relevant come first
+    // Sort ALL events by priority and cache them for paginated /events requests
     const totalEvents = normalized.length;
-    let responseEvents = normalized;
-    let eventsLimited  = false;
-    if (totalEvents > MAX_EVENTS_RESPONSE) {
-      responseEvents = [...normalized].sort((a, b) => eventPriority(a) - eventPriority(b)).slice(0, MAX_EVENTS_RESPONSE);
-      eventsLimited  = true;
-      console.warn(`[analyze] ${req.params.id}: ${totalEvents} events — capped response to ${MAX_EVENTS_RESPONSE}`);
+    const sortedEvents = [...normalized].sort((a, b) => eventPriority(a) - eventPriority(b));
+
+    const eventsLimited = totalEvents > EVENTS_FIRST_BATCH;
+    if (eventsLimited) {
+      console.warn(`[analyze] ${req.params.id}: ${totalEvents} events — sending first ${EVENTS_FIRST_BATCH}, rest via /events`);
     }
 
-    res.json({
+    const analysisResult = {
       total: totalEvents,
-      events: responseEvents,
       eventsLimited,
       detections,
       homeCountry,
       geoSummary,
       userSummaries,
       attackTimeline,
-      ipEnrichment,
+      ipEnrichment: {},   // loaded separately via /enrich
       parseWarnings,
       breachMatches,
-    });
+    };
+
+    // Store in cache so repeated requests with unchanged files are instant
+    eventsCache[req.params.id] = { events: sortedEvents, ts: Date.now(), filesSig, result: analysisResult };
+
+    res.json({ ...analysisResult, events: sortedEvents.slice(0, EVENTS_FIRST_BATCH) });
   } catch (err) {
     console.error('[analyze] Error:', err.message, err.stack);
     res.status(500).json({ error: `Analysis failed: ${err.message}` });
@@ -475,6 +515,35 @@ app.get('/api/ip-correlation/:workspaceId', (req, res) => {
   }
   correlations.sort((a, b) => b.sharedCount - a.sharedCount);
   res.json({ correlations, analyzedAt: currentData.ts });
+});
+
+// Paginated events — returns cached sorted events in batches after analysis
+app.get('/api/workspaces/:id/events', (req, res) => {
+  const cache = eventsCache[req.params.id];
+  if (!cache) return res.status(404).json({ error: 'No cached events — run analysis first' });
+  const offset = Math.max(0, parseInt(req.query.offset) || 0);
+  const limit  = Math.min(Math.max(1, parseInt(req.query.limit)  || 5000), 10000);
+  res.json({
+    events: cache.events.slice(offset, offset + limit),
+    total:  cache.events.length,
+    offset,
+    limit,
+  });
+});
+
+// IP enrichment — separate async endpoint so analyze responds immediately
+app.get('/api/workspaces/:id/enrich', async (req, res) => {
+  try {
+    const ipsFile = path.join(WORKSPACES_DIR, `${req.params.id}.ips.json`);
+    if (!fs.existsSync(ipsFile)) return res.json({ ipEnrichment: {} });
+    const { ips } = JSON.parse(fs.readFileSync(ipsFile, 'utf8'));
+    const attackingIPs = Object.keys(ips).slice(0, 200);
+    const ipEnrichment = await enrichIPs(attackingIPs).catch(() => ({}));
+    res.json({ ipEnrichment });
+  } catch (err) {
+    console.error('[enrich] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
