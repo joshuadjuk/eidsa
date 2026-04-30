@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EIDSA – Entra ID Signin Analyzer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">EIDSA</div>
+        <div class="logo-sub">Entra ID Signin Analyzer</div>
+        <div class="logo-author">by JoshuaDjuk</div>
+      </div>
+      <div class="sidebar-body">
+        <div class="sidebar-label">Workspaces</div>
+        <div id="workspace-list"></div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn-new-workspace" onclick="showNewWorkspaceModal()">
+          <span>＋</span> New Workspace
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main id="main">
+      <div id="welcome" class="welcome-screen">
+        <div class="welcome-brand">
+          <div class="welcome-logo">EIDSA</div>
+          <div class="welcome-tagline">Entra ID Signin Analyzer</div>
+          <div class="welcome-byline">by JoshuaDjuk</div>
+        </div>
+        <p class="welcome-desc">Multi-tenant security monitoring for Azure AD / Entra ID sign-in logs.<br>Detect threats, visualize attack patterns, investigate compromised users.</p>
+        <div class="welcome-steps">
+          <div class="welcome-step">
+            <div class="step-num">01</div>
+            <div class="step-text">Create a workspace for each tenant</div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">02</div>
+            <div class="step-text">Upload sign-in JSON log files</div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">03</div>
+            <div class="step-text">Run analysis & review detections</div>
+          </div>
+        </div>
+      </div>
+      <div id="workspace-view" class="hidden"></div>
+    </main>
+
+    <!-- Right view-nav (tabs as sidebar) -->
+    <nav id="right-nav" class="right-nav">
+      <button class="rnav-toggle" onclick="toggleRightNav()" title="Collapse navigation">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div id="right-nav-items" class="right-nav-items"></div>
+      <div class="rnav-footer">
+        <button class="btn-theme-toggle" onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle dark/light">☀</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Workspace Modal -->
+  <div id="modal-overlay" class="hidden" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon">🏢</div>
+        <h3 id="modal-title">New Workspace</h3>
+      </div>
+      <label>Workspace Name *</label>
+      <input id="ws-name" type="text" placeholder="e.g. Contoso Production" />
+      <label>Tenant Domain</label>
+      <input id="ws-tenant" type="text" placeholder="e.g. contoso.onmicrosoft.com" />
+      <label>Home Country Code</label>
+      <input id="ws-homecountry" type="text" placeholder="ISO 2-letter, e.g. ID, US, SG" maxlength="2" style="text-transform:uppercase" />
+      <label>Trusted Countries <span style="font-weight:400;color:var(--text3)">(won't be flagged as foreign)</span></label>
+      <div class="tag-input-wrap" id="trusted-tags" onclick="document.getElementById('trusted-input').focus()">
+        <input id="trusted-input" type="text" placeholder="Type code + Enter, e.g. SG" maxlength="2"
+          style="background:none;border:none;outline:none;color:var(--text);font-size:12px;width:80px;text-transform:uppercase"
+          onkeydown="handleTagInput(event)" />
+      </div>
+      <label>Trusted IPs <span style="font-weight:400;color:var(--text3)">(one per line — exact, prefix, or CIDR)</span></label>
+      <textarea id="ws-trustedips" placeholder="10.0.0.1&#10;192.168.1.&#10;172.16.0.0/12" rows="3" style="font-family:monospace;font-size:12px;resize:vertical"></textarea>
+      <label>Playbook / Notes</label>
+      <textarea id="ws-playbook" placeholder="Investigation context, known IPs, baseline countries..."></textarea>
+      <details id="tuning-details" style="margin-top:10px">
+        <summary style="cursor:pointer;font-size:12px;color:var(--text2);user-select:none;padding:4px 0">⚙ Rule Tuning (optional)</summary>
+        <div class="tuning-grid" style="margin-top:10px">
+          <div class="tuning-row">
+            <label class="tuning-label">Spray window (min)</label>
+            <input id="tune-spray-window" type="number" min="1" max="120" value="10" class="tuning-input" />
+          </div>
+          <div class="tuning-row">
+            <label class="tuning-label">Spray min users</label>
+            <input id="tune-spray-users" type="number" min="2" max="50" value="5" class="tuning-input" />
+          </div>
+          <div class="tuning-row">
+            <label class="tuning-label">Brute force min attempts</label>
+            <input id="tune-brute-attempts" type="number" min="3" max="200" value="10" class="tuning-input" />
+          </div>
+          <div class="tuning-row">
+            <label class="tuning-label">MFA exhaustion min prompts</label>
+            <input id="tune-mfa-prompts" type="number" min="3" max="50" value="5" class="tuning-input" />
+          </div>
+          <div class="tuning-row">
+            <label class="tuning-label">Enumeration min users</label>
+            <input id="tune-enum-users" type="number" min="3" max="100" value="10" class="tuning-input" />
+          </div>
+        </div>
+      </details>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="submitWorkspace()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

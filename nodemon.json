@@ -1,0 +1,6 @@
+{
+  "watch": ["server.js", "lib/"],
+  "ext": "js",
+  "ignore": ["workspaces/", "uploads/", "public/", "node_modules/"],
+  "exec": "node --max-old-space-size=4096 server.js"
+}

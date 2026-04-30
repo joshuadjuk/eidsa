@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EIDSA – Presentasi Inovasi | Sigma Graduate Program</title>
+<style>
+  :root {
+    --ms-blue: #0078d4;
+    --ms-dark: #003966;
+    --ms-navy: #01050e;
+    --ms-accent: #50e6ff;
+    --ms-green: #107c10;
+    --ms-red: #d13438;
+    --ms-yellow: #ffb900;
+    --text: #f0f4f8;
+    --text2: #a8c0d6;
+    --text3: #5a7fa0;
+    --border: rgba(80,230,255,0.15);
+    --card: rgba(0,42,74,0.65);
+    --slide-w: 1280px;
+    --slide-h: 720px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000a15;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* ── Slide Container ─────────────────────────────────────────────────────── */
+  #deck {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #001424 0%, #00060f 60%, #001224 100%);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    transition: opacity 0.3s;
+  }
+
+  .slide.active { display: flex; }
+
+  /* Geometric background pattern */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 5% 95%, rgba(0,120,212,0.12) 0%, transparent 40%),
+      radial-gradient(circle at 95% 5%, rgba(80,230,255,0.08) 0%, transparent 35%),
+      linear-gradient(rgba(0,120,212,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,120,212,0.03) 1px, transparent 1px);
+    background-size: auto, auto, 60px 60px, 60px 60px;
+    pointer-events: none;
+  }
+
+  /* ── Slide Types ─────────────────────────────────────────────────────────── */
+
+  /* Cover */
+  .slide-cover {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #000d1f 0%, #001832 50%, #000a18 100%);
+  }
+
+  .slide-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0,120,212,0.18) 0%, transparent 70%),
+      radial-gradient(circle at 10% 80%, rgba(80,230,255,0.1) 0%, transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(0,120,212,0.1) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .cover-content { position: relative; z-index: 1; }
+
+  .cover-badge {
+    display: inline-block;
+    background: rgba(0,120,212,0.2);
+    border: 1px solid rgba(0,120,212,0.4);
+    color: var(--ms-accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+
+  .cover-title {
+    font-size: 80px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #ffffff 0%, #50e6ff 50%, #0078d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .cover-sub {
+    font-size: 20px;
+    color: var(--text2);
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 36px;
+  }
+
+  .cover-divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ms-blue), var(--ms-accent), transparent);
+    margin: 0 auto 32px;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cover-meta-item {
+    text-align: center;
+  }
+
+  .cover-meta-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .cover-meta-value {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  /* Slide Header */
+  .slide-header {
+    padding: 28px 48px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .slide-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ms-accent);
+    margin-bottom: 6px;
+  }
+
+  .slide-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+
+  .slide-num {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 600;
+    padding-top: 4px;
+  }
+
+  .slide-body {
+    flex: 1;
+    padding: 20px 48px 28px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Components ──────────────────────────────────────────────────────────── */
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    backdrop-filter: blur(8px);
+  }
+
+  .card-accent {
+    border-left: 3px solid var(--ms-blue);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .val {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ms-accent);
+    line-height: 1;
+  }
+
+  .val-unit {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  p, li {
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  ul { padding-left: 16px; }
+  ul li { margin-bottom: 6px; }
+
+  .highlight { color: var(--ms-accent); font-weight: 600; }
+  .danger { color: #ff6b6b; }
+  .ok { color: #6bcb77; }
+  .warn { color: #ffd93d; }
+
+  /* Pill tags */
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-blue  { background: rgba(0,120,212,0.2); color: var(--ms-accent); border: 1px solid rgba(0,120,212,0.3); }
+  .pill-green { background: rgba(16,124,16,0.2); color: #6bcb77; border: 1px solid rgba(16,124,16,0.3); }
+  .pill-red   { background: rgba(209,52,56,0.2); color: #ff6b6b; border: 1px solid rgba(209,52,56,0.3); }
+  .pill-gray  { background: rgba(255,255,255,0.06); color: var(--text3); border: 1px solid rgba(255,255,255,0.1); }
+
+  /* ── Comparison Table ────────────────────────────────────────────────────── */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .comp-table thead th {
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table th:first-child { text-align: left; }
+  .comp-table thead th:nth-child(2) { color: var(--text3); }
+  .comp-table thead th:nth-child(3) { color: var(--ms-accent); }
+  .comp-table thead th:nth-child(4) { color: var(--text2); }
+  .comp-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .comp-table tbody tr:hover { background: rgba(0,120,212,0.06); }
+  .comp-table tbody td {
+    padding: 7px 14px;
+    color: var(--text2);
+    text-align: center;
+  }
+  .comp-table tbody td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+  .comp-table .no  { color: #ff6b6b; font-size: 16px; }
+  .comp-table .yes { color: #6bcb77; font-size: 16px; }
+  .comp-table .partial { color: #ffd93d; font-size: 11px; font-weight: 600; }
+  .comp-table .note { font-size: 11px; color: var(--text3); }
+
+  /* ── Architecture boxes ──────────────────────────────────────────────────── */
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(0,120,212,0.08);
+    border: 1px solid rgba(0,120,212,0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .arch-layer-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+  }
+  .arch-layer-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .arch-layer-tech {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .arch-arrow {
+    text-align: center;
+    color: var(--ms-accent);
+    font-size: 16px;
+    margin: -2px 0;
+    opacity: 0.6;
+  }
+
+  /* Detection rules */
+  .rule-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0,120,212,0.08);
+    border: 1px solid rgba(0,120,212,0.18);
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .rule-icon { font-size: 16px; flex-shrink: 0; }
+  .rule-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .rule-desc { font-size: 11px; color: var(--text3); }
+
+  /* Timeline / roadmap */
+  .phase {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .phase-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .phase-line {
+    position: relative;
+  }
+  .phase-line::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 34px;
+    bottom: -12px;
+    width: 2px;
+    background: var(--border);
+  }
+  .phase:last-child .phase-line::after { display: none; }
+  .phase-title { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .phase-desc  { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* Stats bar */
+  .stat-bar {
+    display: flex;
+    gap: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    height: 8px;
+    margin-top: 8px;
+  }
+  .stat-bar-seg {
+    transition: width 0.5s;
+  }
+
+  /* ROI block */
+  .roi-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px;
+  }
+  .roi-row:last-child { border-bottom: none; }
+  .roi-label { color: var(--text2); }
+  .roi-before { color: #ff6b6b; font-weight: 600; text-decoration: line-through; opacity: 0.7; }
+  .roi-after  { color: #6bcb77; font-weight: 700; font-size: 15px; }
+
+  /* Agenda items */
+  .agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .agenda-item:hover { background: rgba(0,120,212,0.1); }
+  .agenda-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,120,212,0.2);
+    border: 1px solid rgba(0,120,212,0.4);
+    color: var(--ms-accent);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Pain point cards */
+  .pain-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(209,52,56,0.07);
+    border: 1px solid rgba(209,52,56,0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .pain-icon { font-size: 20px; flex-shrink: 0; }
+
+  /* Solution feature */
+  .feat-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 9px 12px;
+    background: rgba(0,120,212,0.08);
+    border: 1px solid rgba(0,120,212,0.15);
+    border-radius: 6px;
+    margin-bottom: 7px;
+  }
+  .feat-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Nav ─────────────────────────────────────────────────────────────────── */
+  #nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0,20,40,0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 8px 16px;
+    z-index: 100;
+  }
+  #nav button {
+    background: none;
+    border: none;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  #nav button:hover { color: #fff; background: rgba(0,120,212,0.2); }
+  #nav-info {
+    font-size: 12px;
+    color: var(--text3);
+    min-width: 70px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .nav-dots {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+  .nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-dot.active {
+    width: 18px;
+    background: var(--ms-blue);
+  }
+
+  #fullscreen-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(0,20,40,0.8);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  #fullscreen-btn:hover { color: #fff; background: rgba(0,120,212,0.2); }
+
+  /* Print / export */
+  @media print {
+    body { overflow: visible; background: #fff; }
+    #deck { overflow: visible; height: auto; display: block; }
+    .slide { position: relative; display: flex !important; page-break-after: always; width: 100%; height: 720px; margin-bottom: 0; border-radius: 0; }
+    #nav, #fullscreen-btn { display: none; }
+  }
+
+  /* Scale slide to fit viewport */
+  #slide-scaler {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    flex-shrink: 0;
+    transform-origin: center center;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+  <div id="slide-scaler">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 1 — COVER
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-cover active" id="slide-1">
+    <div class="cover-content">
+      <div class="cover-badge">Sigma Graduate Program · Microsoft Consultant · TelkomSigma</div>
+      <div class="cover-title">EIDSA</div>
+      <div class="cover-sub">Entra ID Signin Analyzer</div>
+      <div class="cover-divider"></div>
+      <p style="font-size:16px;color:var(--text2);max-width:600px;margin:0 auto 32px;line-height:1.7">
+        Solusi Monitoring Keamanan Multi-Tenant Berbasis Microsoft Entra ID<br>
+        untuk Managed Service Provider
+      </p>
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Presented by</div>
+          <div class="cover-meta-value">Joshua Djuk</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Program</div>
+          <div class="cover-meta-value">Sigma Graduate Program</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Role</div>
+          <div class="cover-meta-value">Microsoft Consultant</div>
+        </div>
+        <div class="cover-meta-item">
+          <div class="cover-meta-label">Periode OJT</div>
+          <div class="cover-meta-value">Nov 2025 – Mei 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 2 — AGENDA
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Overview</div>
+        <div class="slide-title">Agenda Presentasi</div>
+      </div>
+      <div class="slide-num">02 / 15</div>
+    </div>
+    <div class="slide-body" style="display:flex;gap:24px;align-items:center">
+      <div style="flex:1">
+        <div class="agenda-item">
+          <div class="agenda-num">01</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Problem Statement</div>
+            <div style="font-size:12px;color:var(--text3)">Tantangan monitoring multi-tenant di TelkomSigma</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">02</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Gap Analysis</div>
+            <div style="font-size:12px;color:var(--text3)">Keterbatasan native Entra ID untuk MSP</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">03</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Solusi: EIDSA</div>
+            <div style="font-size:12px;color:var(--text3)">Overview fitur & detection engine</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">04</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Arsitektur Teknis</div>
+            <div style="font-size:12px;color:var(--text3)">Stack, komponen, deployment</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">05</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Head-to-Head Comparison</div>
+            <div style="font-size:12px;color:var(--text3)">EIDSA vs Entra ID Native vs Sentinel</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="agenda-item">
+          <div class="agenda-num">06</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Business Value & ROI</div>
+            <div style="font-size:12px;color:var(--text3)">Cost savings & value proposition</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">07</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Demo PoC</div>
+            <div style="font-size:12px;color:var(--text3)">Screenshot key features & live demo</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">08</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Roadmap Implementasi</div>
+            <div style="font-size:12px;color:var(--text3)">4-phase plan menuju production</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">09</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Risk & Mitigasi</div>
+            <div style="font-size:12px;color:var(--text3)">Risiko teknis, bisnis, dan mitigasinya</div>
+          </div>
+        </div>
+        <div class="agenda-item">
+          <div class="agenda-num">10</div>
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:13.5px">Kesimpulan & Next Steps</div>
+            <div style="font-size:12px;color:var(--text3)">Rekomendasi & call to action</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 3 — PROBLEM STATEMENT
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Problem Statement</div>
+        <div class="slide-title">TelkomSigma Mengelola Ratusan Tenant — Tapi Visibilitasnya Nol</div>
+      </div>
+      <div class="slide-num">03 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+        <div>
+          <div class="pain-card">
+            <div class="pain-icon">🏢</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:3px">Multi-Tenant Blind Spot</div>
+              <p style="font-size:12px">Sebagai MSP, TelkomSigma mengelola puluhan tenant klien. Monitoring sign-in harus dilakukan <span class="danger">satu-per-satu</span> di portal Azure yang berbeda. Ancaman lintas tenant tidak terdeteksi.</p>
+            </div>
+          </div>
+          <div class="pain-card">
+            <div class="pain-icon">💸</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:3px">Biaya Lisensi Tidak Terjangkau</div>
+              <p style="font-size:12px">Fitur deteksi lanjutan (risk-based CA, Identity Protection) <span class="danger">hanya tersedia di Entra ID P2</span> ($6/user/bulan) + Microsoft Sentinel. Untuk 10 tenant × 500 user = <span class="danger">$30.000+/bulan.</span></p>
+            </div>
+          </div>
+          <div class="pain-card">
+            <div class="pain-icon">🐌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:3px">Investigasi Manual & Lambat</div>
+              <p style="font-size:12px">SOC analyst harus meng-export log JSON secara manual, membuka Excel/KQL, dan membuat laporan sendiri. <span class="danger">MTTR rata-rata 4–8 jam</span> per insiden identity attack.</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="label">Dampak Bisnis</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+              <div style="text-align:center;padding:12px;background:rgba(209,52,56,0.08);border:1px solid rgba(209,52,56,0.2);border-radius:6px">
+                <div style="font-size:26px;font-weight:700;color:#ff6b6b">4–8 jam</div>
+                <div style="font-size:11px;color:var(--text3)">rata-rata MTTR<br>identity attack</div>
+              </div>
+              <div style="text-align:center;padding:12px;background:rgba(209,52,56,0.08);border:1px solid rgba(209,52,56,0.2);border-radius:6px">
+                <div style="font-size:26px;font-weight:700;color:#ff6b6b">$30K+</div>
+                <div style="font-size:11px;color:var(--text3)">biaya lisensi/bulan<br>10 tenant × 500 user</div>
+              </div>
+              <div style="text-align:center;padding:12px;background:rgba(209,52,56,0.08);border:1px solid rgba(209,52,56,0.2);border-radius:6px">
+                <div style="font-size:26px;font-weight:700;color:#ff6b6b">0%</div>
+                <div style="font-size:11px;color:var(--text3)">visibilitas<br>lintas tenant</div>
+              </div>
+              <div style="text-align:center;padding:12px;background:rgba(209,52,56,0.08);border:1px solid rgba(209,52,56,0.2);border-radius:6px">
+                <div style="font-size:26px;font-weight:700;color:#ff6b6b">Manual</div>
+                <div style="font-size:11px;color:var(--text3)">reporting &<br>investigasi</div>
+              </div>
+            </div>
+          </div>
+          <div class="card card-accent">
+            <div class="label">Pertanyaan Inti</div>
+            <p style="font-size:14px;color:#fff;font-style:italic;margin-top:6px;line-height:1.7">
+              "Bagaimana TelkomSigma dapat memonitor keamanan sign-in Entra ID dari <span class="highlight">seluruh tenant klien secara terpusat</span>, dengan biaya minimal, tanpa bergantung pada lisensi premium?"
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 4 — GAP ANALYSIS (Native Entra ID Limitations)
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Gap Analysis</div>
+        <div class="slide-title">Apa yang Tidak Bisa Dilakukan Native Entra ID?</div>
+      </div>
+      <div class="slide-num">04 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div>
+          <div style="margin-bottom:10px;padding:8px 12px;background:rgba(0,120,212,0.1);border-radius:6px;font-size:12px;color:var(--text3)">
+            ✦ Kemampuan yang <span class="danger">tidak tersedia</span> di native Entra ID (tanpa P2/Sentinel)
+          </div>
+          <div class="feat-item" style="background:rgba(209,52,56,0.06);border-color:rgba(209,52,56,0.18)">
+            <div class="feat-icon">❌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Multi-Tenant Unified Dashboard</div>
+              <div style="font-size:11.5px;color:var(--text3)">Harus switch antar portal per tenant. Tidak ada single-pane-of-glass.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(209,52,56,0.06);border-color:rgba(209,52,56,0.18)">
+            <div class="feat-icon">❌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Custom Detection Rules</div>
+              <div style="font-size:11.5px;color:var(--text3)">Password spray, brute force, MFA fatigue — hanya tersedia di Identity Protection P2.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(209,52,56,0.06);border-color:rgba(209,52,56,0.18)">
+            <div class="feat-icon">❌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Kill Chain & Attack Graph</div>
+              <div style="font-size:11.5px;color:var(--text3)">Visualisasi MITRE ATT&CK mapping tidak tersedia di portal standar.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(209,52,56,0.06);border-color:rgba(209,52,56,0.18)">
+            <div class="feat-icon">❌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Tunable Thresholds</div>
+              <div style="font-size:11.5px;color:var(--text3)">Tidak ada konfigurasi per-tenant untuk sensitivitas deteksi.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(209,52,56,0.06);border-color:rgba(209,52,56,0.18)">
+            <div class="feat-icon">❌</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Offline / Air-gapped Analysis</div>
+              <div style="font-size:11.5px;color:var(--text3)">Log tidak dapat dianalisis di lingkungan tanpa koneksi ke cloud.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom:10px;padding:8px 12px;background:rgba(255,185,0,0.08);border-radius:6px;font-size:12px;color:var(--text3)">
+            ✦ Tersedia tapi <span class="warn">memerlukan lisensi premium</span> atau biaya tambahan
+          </div>
+          <div class="feat-item" style="background:rgba(255,185,0,0.06);border-color:rgba(255,185,0,0.18)">
+            <div class="feat-icon">⚠️</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Identity Risk Detection</div>
+              <div style="font-size:11.5px;color:var(--text3)">Memerlukan <span class="warn">Entra ID P2</span> ($6/user/bln) — hanya flag risiko basic, tidak ada custom rules.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(255,185,0,0.06);border-color:rgba(255,185,0,0.18)">
+            <div class="feat-icon">⚠️</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">SIEM & Log Correlation</div>
+              <div style="font-size:11.5px;color:var(--text3)">Memerlukan <span class="warn">Microsoft Sentinel</span> ($200–$2.000/bln/tenant) untuk korelasi dan threat hunting.</div>
+            </div>
+          </div>
+          <div class="feat-item" style="background:rgba(255,185,0,0.06);border-color:rgba(255,185,0,0.18)">
+            <div class="feat-icon">⚠️</div>
+            <div>
+              <div style="font-weight:600;color:#fff;font-size:12.5px">Geolocation Alerting</div>
+              <div style="font-size:11.5px;color:var(--text3)">Named Locations & CA tersedia di P1, tapi tidak ada interactive map atau investigasi mendalam.</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:12px 14px;background:rgba(0,120,212,0.1);border:1px solid rgba(0,120,212,0.2);border-radius:6px">
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">
+              💡 <strong>Kesimpulan Gap:</strong> Fitur deteksi advanced di ekosistem Microsoft <strong>tersedia</strong> tapi memerlukan biaya lisensi yang signifikan — tidak realistis untuk semua tenant klien TelkomSigma, terutama segmen SMB.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 5 — SOLUSI: EIDSA
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Solusi Inovasi</div>
+        <div class="slide-title">EIDSA — Security Analytics Platform untuk MSP</div>
+      </div>
+      <div class="slide-num">05 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:20px">
+        <div>
+          <div class="card card-accent" style="margin-bottom:14px">
+            <div class="label">Definisi</div>
+            <p style="font-size:13px;color:var(--text);margin-top:6px;line-height:1.7">
+              EIDSA adalah <span class="highlight">web-based security analytics tool</span> yang menganalisis log sign-in Entra ID dari multiple tenant secara terpusat, mendeteksi pola serangan identity, dan menghasilkan actionable insights — <strong>tanpa memerlukan lisensi Entra ID P2 atau Microsoft Sentinel.</strong>
+            </p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--ms-accent)">8+</div>
+              <div style="font-size:11px;color:var(--text3)">Detection Rules</div>
+            </div>
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--ms-accent)">∞</div>
+              <div style="font-size:11px;color:var(--text3)">Tenant Workspaces</div>
+            </div>
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--ms-accent)">10+</div>
+              <div style="font-size:11px;color:var(--text3)">Visualisasi Views</div>
+            </div>
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:22px;font-weight:700;color:var(--ms-accent)">100%</div>
+              <div style="font-size:11px;color:var(--text3)">Data On-Premise</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <div class="feat-item">
+              <div class="feat-icon">🏢</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Multi-Tenant Workspace</div>
+                <div style="font-size:11px;color:var(--text3)">Satu dashboard untuk semua tenant klien</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">🔍</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Smart Detection Engine</div>
+                <div style="font-size:11px;color:var(--text3)">8 custom rules dengan threshold yang bisa diatur</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">⛓️</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Kill Chain Mapping</div>
+                <div style="font-size:11px;color:var(--text3)">Visualisasi MITRE ATT&CK per user</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">🗺️</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Geolocation Attack Map</div>
+                <div style="font-size:11px;color:var(--text3)">Interactive map login dari seluruh dunia</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">👤</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">User Risk Profiling</div>
+                <div style="font-size:11px;color:var(--text3)">Scoring CRITICAL / HIGH / MEDIUM / LOW</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">📊</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Advanced Analytics</div>
+                <div style="font-size:11px;color:var(--text3)">Attack graph, velocity, swimlane, sankey</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">📓</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">Playbook Integration</div>
+                <div style="font-size:11px;color:var(--text3)">Konteks investigasi per workspace</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">📄</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12px">PDF Report Export</div>
+                <div style="font-size:11px;color:var(--text3)">Laporan profesional untuk klien</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 6 — DETECTION ENGINE
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Detection Engine</div>
+        <div class="slide-title">8 Custom Detection Rules — Tunable Per Tenant</div>
+      </div>
+      <div class="slide-num">06 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div class="rule-chip">
+            <div class="rule-icon">💉</div>
+            <div>
+              <div class="rule-name">Password Spray</div>
+              <div class="rule-desc">Satu IP mencoba banyak akun dalam window waktu singkat. Threshold: ≥5 user / 10 menit (tunable).</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">HIGH</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">🔨</div>
+            <div>
+              <div class="rule-name">Brute Force</div>
+              <div class="rule-desc">Banyak percobaan login gagal dari satu IP ke satu akun. Threshold: ≥10 percobaan (tunable).</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">HIGH</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">📲</div>
+            <div>
+              <div class="rule-name">MFA Fatigue / Exhaustion</div>
+              <div class="rule-desc">Banyak MFA prompt berturut-turut — teknik bypass modern. Threshold: ≥5 prompt (tunable).</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">CRIT</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">✈️</div>
+            <div>
+              <div class="rule-name">Impossible Travel</div>
+              <div class="rule-desc">Login dari dua negara berbeda dalam waktu yang secara fisik tidak mungkin.</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">CRIT</span>
+          </div>
+        </div>
+        <div>
+          <div class="rule-chip">
+            <div class="rule-icon">🌍</div>
+            <div>
+              <div class="rule-name">Foreign Login</div>
+              <div class="rule-desc">Login sukses dari negara di luar trusted countries list yang dikonfigurasi per workspace.</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">HIGH</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">🔓</div>
+            <div>
+              <div class="rule-name">Credential Stuffing</div>
+              <div class="rule-desc">Pola login sukses setelah banyak gagal — indikasi credential breach yang digunakan.</div>
+            </div>
+            <span class="pill pill-red" style="margin-left:auto">HIGH</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">🌙</div>
+            <div>
+              <div class="rule-name">Off-Hours Access</div>
+              <div class="rule-desc">Login di jam tidak wajar (tengah malam, weekend) dari IP tidak dikenal.</div>
+            </div>
+            <span class="pill pill-blue" style="margin-left:auto">MED</span>
+          </div>
+          <div class="rule-chip">
+            <div class="rule-icon">📋</div>
+            <div>
+              <div class="rule-name">User Enumeration</div>
+              <div class="rule-desc">Satu IP mencoba banyak username berbeda — indikasi reconnaissance. Threshold: ≥10 user (tunable).</div>
+            </div>
+            <span class="pill pill-blue" style="margin-left:auto">MED</span>
+          </div>
+          <div style="margin-top:10px;padding:10px 12px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;font-size:12px;color:var(--text2)">
+            ⚙️ Semua threshold bisa dikonfigurasi per workspace — adaptif untuk berbagai profil risiko klien.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 7 — TECHNICAL ARCHITECTURE
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Arsitektur Teknis</div>
+        <div class="slide-title">Stack & Deployment Architecture</div>
+      </div>
+      <div class="slide-num">07 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:start">
+        <div>
+          <div class="arch-layer" style="border-color:rgba(80,230,255,0.3);background:rgba(80,230,255,0.07)">
+            <div class="arch-layer-icon">🌐</div>
+            <div>
+              <div class="arch-layer-label">Data Source</div>
+              <div class="arch-layer-tech">Microsoft Entra ID Sign-in Logs (JSON)</div>
+            </div>
+            <span class="pill pill-blue" style="margin-left:auto;font-size:10px">Input</span>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-layer-icon">⚡</div>
+            <div>
+              <div class="arch-layer-label">Backend / Analysis Engine</div>
+              <div class="arch-layer-tech">Node.js + Express.js — REST API</div>
+            </div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-layer-icon">🗄️</div>
+            <div>
+              <div class="arch-layer-label">Storage</div>
+              <div class="arch-layer-tech">File-based JSON Workspace Store</div>
+            </div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer">
+            <div class="arch-layer-icon">🖥️</div>
+            <div>
+              <div class="arch-layer-label">Frontend</div>
+              <div class="arch-layer-tech">Vanilla JS + Chart.js + Leaflet.js</div>
+            </div>
+          </div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-layer" style="border-color:rgba(16,124,16,0.3);background:rgba(16,124,16,0.07)">
+            <div class="arch-layer-icon">🐳</div>
+            <div>
+              <div class="arch-layer-label">Deployment</div>
+              <div class="arch-layer-tech">Docker / Azure App Service / On-Premise</div>
+            </div>
+            <span class="pill pill-green" style="margin-left:auto;font-size:10px">Output</span>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="label" style="margin-bottom:10px">Kenapa Stack Ini?</div>
+            <div class="feat-item" style="margin-bottom:6px;background:rgba(0,0,0,0)">
+              <div class="feat-icon">✅</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">Zero External Dependencies</div>
+                <div style="font-size:11.5px;color:var(--text3)">Tidak butuh cloud service, database eksternal, atau lisensi tambahan untuk beroperasi.</div>
+              </div>
+            </div>
+            <div class="feat-item" style="margin-bottom:6px;background:rgba(0,0,0,0)">
+              <div class="feat-icon">✅</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">Azure-Ready</div>
+                <div style="font-size:11.5px;color:var(--text3)">Bisa di-deploy langsung ke Azure App Service atau Azure Container Apps dalam hitungan menit.</div>
+              </div>
+            </div>
+            <div class="feat-item" style="margin-bottom:6px;background:rgba(0,0,0,0)">
+              <div class="feat-icon">✅</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">Data Sovereignty</div>
+                <div style="font-size:11.5px;color:var(--text3)">Log klien tidak pernah keluar dari environment — cocok untuk klien pemerintah & regulated industry.</div>
+              </div>
+            </div>
+            <div class="feat-item" style="background:rgba(0,0,0,0)">
+              <div class="feat-icon">✅</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">Lightweight & Fast</div>
+                <div style="font-size:11.5px;color:var(--text3)">Analisis 100K+ events dalam hitungan detik. Tidak butuh server besar.</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">🟩</div>
+              <div style="font-size:11px;font-weight:600;color:#fff">Node.js</div>
+              <div style="font-size:10px;color:var(--text3)">Backend API</div>
+            </div>
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">📊</div>
+              <div style="font-size:11px;font-weight:600;color:#fff">Chart.js</div>
+              <div style="font-size:10px;color:var(--text3)">Analytics Charts</div>
+            </div>
+            <div style="padding:10px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">🗺️</div>
+              <div style="font-size:11px;font-weight:600;color:#fff">Leaflet.js</div>
+              <div style="font-size:10px;color:var(--text3)">Geo Mapping</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 8 — HEAD-TO-HEAD COMPARISON
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Perbandingan</div>
+        <div class="slide-title">EIDSA vs Entra ID Native vs Microsoft Sentinel</div>
+      </div>
+      <div class="slide-num">08 / 15</div>
+    </div>
+    <div class="slide-body">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th style="width:34%">Kapabilitas</th>
+            <th>Entra ID Free/P1</th>
+            <th>EIDSA ✦</th>
+            <th>Entra P2 + Sentinel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Multi-Tenant Unified Dashboard</td><td class="no">✗</td><td class="yes">✓</td><td class="partial">Manual setup</td></tr>
+          <tr><td>Tanpa Lisensi Premium</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Password Spray Detection</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>MFA Fatigue Detection</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Impossible Travel Detection</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Kill Chain / MITRE Mapping</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Interactive Geolocation Map</td><td class="no">✗</td><td class="yes">✓</td><td class="partial">Basic</td></tr>
+          <tr><td>Tunable Detection Thresholds</td><td class="no">✗</td><td class="yes">✓</td><td class="partial">KQL only</td></tr>
+          <tr><td>User Risk Scoring</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td>Offline / Air-gapped Analysis</td><td class="no">✗</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Custom Playbook per Tenant</td><td class="no">✗</td><td class="yes">✓</td><td class="partial">Complex</td></tr>
+          <tr><td>PDF Report Export</td><td class="no">✗</td><td class="yes">✓</td><td class="partial">Manual</td></tr>
+          <tr>
+            <td style="font-weight:700;color:#fff">Biaya (10 tenant × 500 users)</td>
+            <td><span class="warn">~$0</span><span class="note"> tapi sangat terbatas</span></td>
+            <td><span class="ok" style="font-size:14px;font-weight:700">~$50/bln</span><span class="note"> (hosting saja)</span></td>
+            <td><span class="danger" style="font-size:14px;font-weight:700">$30.000+/bln</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 9 — BUSINESS VALUE & ROI
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Business Value & ROI</div>
+        <div class="slide-title">Dampak Nyata untuk TelkomSigma & Klien</div>
+      </div>
+      <div class="slide-num">09 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:18px">
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="label" style="margin-bottom:10px">Perbandingan Biaya Operasional (10 Tenant)</div>
+            <div class="roi-row">
+              <div class="roi-label">🔴 Entra ID P2 (5.000 user)</div>
+              <div>
+                <span class="roi-before">$30.000/bln</span>
+              </div>
+            </div>
+            <div class="roi-row">
+              <div class="roi-label">🔴 Microsoft Sentinel (10 tenant)</div>
+              <div>
+                <span class="roi-before">$2.000–$20.000/bln</span>
+              </div>
+            </div>
+            <div class="roi-row">
+              <div class="roi-label">🟢 EIDSA (Azure App Service B1)</div>
+              <div>
+                <span class="roi-after">~$50/bln</span>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding:8px;background:rgba(16,124,16,0.1);border:1px solid rgba(16,124,16,0.2);border-radius:6px;text-align:center">
+              <div style="font-size:11px;color:var(--text3)">Potensi Penghematan / Bulan</div>
+              <div style="font-size:28px;font-weight:700;color:#6bcb77">$49.950+</div>
+              <div style="font-size:11px;color:var(--text3)">atau ~99.9% cost reduction</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="label" style="margin-bottom:10px">Operational Value</div>
+            <div class="feat-item" style="margin-bottom:7px">
+              <div class="feat-icon">⚡</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">MTTR Turun ≥60%</div>
+                <div style="font-size:11.5px;color:var(--text3)">Dari 4–8 jam ke <strong>1–2 jam</strong> dengan centralized view & risk scoring otomatis</div>
+              </div>
+            </div>
+            <div class="feat-item" style="margin-bottom:7px">
+              <div class="feat-icon">🎯</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">SOC Efficiency</div>
+                <div style="font-size:11.5px;color:var(--text3)">1 analyst bisa monitoring 10+ tenant sekaligus vs sebelumnya 2–3 tenant saja</div>
+              </div>
+            </div>
+            <div class="feat-item" style="margin-bottom:7px">
+              <div class="feat-icon">💼</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">New Revenue Stream</div>
+                <div style="font-size:11.5px;color:var(--text3)">TelkomSigma dapat menawarkan "Identity Security Monitoring as a Service" sebagai produk premium</div>
+              </div>
+            </div>
+            <div class="feat-item">
+              <div class="feat-icon">🏆</div>
+              <div>
+                <div style="font-weight:600;color:#fff;font-size:12.5px">Competitive Advantage</div>
+                <div style="font-size:11.5px;color:var(--text3)">Diferensiasi dari kompetitor MSP yang masih menggunakan monitoring manual</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;background:rgba(0,120,212,0.08);border:1px solid rgba(0,120,212,0.2);border-radius:6px;font-size:12.5px;color:var(--text2)">
+        💡 <strong>Value Proposition:</strong> EIDSA memposisikan TelkomSigma sebagai MSP yang mampu memberikan <strong>enterprise-grade identity security monitoring</strong> kepada semua segmen klien — termasuk SMB yang tidak mampu membeli lisensi Entra ID P2.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 10 — POC DEMO
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Proof of Concept</div>
+        <div class="slide-title">PoC Sudah Berjalan — Demo Live</div>
+      </div>
+      <div class="slide-num">10 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">🏢</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">Multi-Tenant Workspace</div>
+          <div style="font-size:11.5px;color:var(--text3)">Setiap klien punya workspace isolasi dengan konfigurasi & playbook sendiri</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">🔍</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">Detection Dashboard</div>
+          <div style="font-size:11.5px;color:var(--text3)">Risk scoring otomatis, deteksi terkelompok berdasarkan severity & tipe serangan</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">⛓️</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">Kill Chain Matrix</div>
+          <div style="font-size:11.5px;color:var(--text3)">Mapping per user ke MITRE ATT&CK framework — klik cell untuk drill-down</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">🗺️</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">Geolocation Map</div>
+          <div style="font-size:11.5px;color:var(--text3)">Heatmap & markers untuk setiap login event, filter by success/failure</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">👤</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">User Risk Profile</div>
+          <div style="font-size:11.5px;color:var(--text3)">Timeline per-user, triage management, notes, watchlist, dan bulk actions</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:32px;margin-bottom:8px">📊</div>
+          <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:4px">Advanced Charts</div>
+          <div style="font-size:11.5px;color:var(--text3)">Attack velocity, sankey flow, country×app matrix, swimlane timeline</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 14px;background:rgba(16,124,16,0.08);border:1px solid rgba(16,124,16,0.2);border-radius:6px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:24px">✅</div>
+        <div>
+          <div style="font-weight:600;color:#6bcb77;font-size:13px">PoC Status: Fully Functional — 5 Fitur Baru Ditambahkan</div>
+          <div style="font-size:12px;color:var(--text2)">EIDSA sudah dapat menganalisis real Entra ID sign-in log JSON, kini diperkuat dengan CA Remediation, IOC Export, Numeric Risk Score, Attack Campaign Grouping, dan Login Heatmap.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 11 — NEW FEATURES
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Fitur Baru</div>
+        <div class="slide-title">5 Peningkatan Signifikan — Diimplementasikan Selama OJT</div>
+      </div>
+      <div class="slide-num">11 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="card" style="border-top:2px solid #0078d4">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">🛡️</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">CA Remediation Tab</div>
+              <div style="font-size:10px;color:var(--ms-accent);text-transform:uppercase;letter-spacing:.8px">Policy Automation</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Auto-maping setiap deteksi ke rekomendasi Conditional Access Policy spesifik. 20 rekomendasi terprioritasi (Critical/High/Medium) dengan langkah aksi dan tips implementasi.</div>
+        </div>
+        <div class="card" style="border-top:2px solid #10b981">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">⬇</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">IOC Export CSV</div>
+              <div style="font-size:10px;color:#6bcb77;text-transform:uppercase;letter-spacing:.8px">SIEM Integration</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Ekspor satu klik untuk semua Indicators of Compromise (IP, user, negara) ke format CSV. Langsung dapat diimport ke firewall, SIEM, atau blocklist tanpa manual copy-paste.</div>
+        </div>
+        <div class="card" style="border-top:2px solid #f59e0b">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:22px">
+              <span style="display:inline-block;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:2px 7px;color:#ef4444;font-weight:800;font-size:18px;font-family:monospace">87</span>
+            </div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Numeric Risk Score</div>
+              <div style="font-size:10px;color:#f59e0b;text-transform:uppercase;letter-spacing:.8px">0–100 per User</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Skor risiko kuantitatif per akun: base score per tier (CRITICAL=72+) ditambah bonus berdasarkan foreign login, tipe deteksi, breadth, dan geo-spread. Memungkinkan prioritisasi berbasis angka.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card" style="border-top:2px solid #a855f7">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">⚡</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Attack Campaign Grouping</div>
+              <div style="font-size:10px;color:#c084fc;text-transform:uppercase;letter-spacing:.8px">Correlation Engine</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Algoritma Union-Find mengkorelasi deteksi yang berbeda menjadi satu campaign berdasarkan shared IP dan shared user. Analyst langsung melihat "ini satu serangan terkoordinasi" tanpa harus cross-reference manual.</div>
+        </div>
+        <div class="card" style="border-top:2px solid #06b6d4">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">🔥</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Login Activity Heatmap</div>
+              <div style="font-size:10px;color:#22d3ee;text-transform:uppercase;letter-spacing:.8px">Temporal Analysis</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Visualisasi 24 jam × 7 hari yang menampilkan intensitas login per slot waktu. Memudahkan identifikasi pola serangan off-hours dan anomali temporal yang tidak terlihat di log mentah.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 12 — FITUR LANJUTAN
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Fitur Lanjutan</div>
+        <div class="slide-title">4 Peningkatan Tambahan — Investigasi & Operasional</div>
+      </div>
+      <div class="slide-num">12 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="card" style="border-top:2px solid #22d3ee">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">⚡</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Detection Explainer</div>
+              <div style="font-size:10px;color:#22d3ee;text-transform:uppercase;letter-spacing:.8px">Why Did This Fire?</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Setiap detection card kini menampilkan penjelasan terstruktur: trigger logic, evidence chips (IP, waktu, jumlah attempt), dan konteks MITRE ATT&CK. SOC analyst tidak perlu baca raw JSON untuk memahami mengapa alert muncul.</div>
+        </div>
+        <div class="card" style="border-top:2px solid #ef4444">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">🕵️</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Threat Intel IP Lookup</div>
+              <div style="font-size:10px;color:#f87171;text-transform:uppercase;letter-spacing:.8px">Local Static Enrichment</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">IP attacking secara otomatis di-tag jika cocok dengan database lokal: Tor exit nodes, named VPN providers (Mullvad, NordVPN, ProtonVPN, dll.), dan bulletproof hosting (M247, FranTech, Sharktech). Muncul sebagai badge merah/orange pada setiap IP.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="card" style="border-top:2px solid #6bcb77">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">📨</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Weekly Digest Export</div>
+              <div style="font-size:10px;color:#6bcb77;text-transform:uppercase;letter-spacing:.8px">Shareable HTML Brief</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Generate laporan HTML lengkap untuk klien/manajemen: KPI summary, user risk cards dengan narrative, top attacking countries, top threats, CA remediation hits, dan campaign summary. Satu klik download, siap kirim via email.</div>
+        </div>
+        <div class="card" style="border-top:2px solid #a855f7">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="font-size:26px">📊</div>
+            <div>
+              <div style="font-weight:700;color:#fff;font-size:13px">Baseline Drift Alert</div>
+              <div style="font-size:10px;color:#c084fc;text-transform:uppercase;letter-spacing:.8px">Trend Comparison</div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text2)">Bandingkan run saat ini vs baseline yang disimpan sebelumnya. Dashboard menampilkan delta per metrik: "↑ +340% Foreign Failed", "↑ +2 Critical Accounts". Membantu SOC segera melihat apakah situasi memburuk atau membaik antar periode analisis.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 13 — ROADMAP
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-13">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Roadmap</div>
+        <div class="slide-title">4-Phase Implementation Roadmap</div>
+      </div>
+      <div class="slide-num">13 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div class="phase">
+            <div class="phase-line">
+              <div class="phase-dot" style="background:rgba(16,124,16,0.3);border:2px solid #107c10;color:#6bcb77">1</div>
+            </div>
+            <div>
+              <div class="phase-title">Phase 1 — PoC (Selesai ✅)</div>
+              <div style="font-size:11px;color:var(--ms-accent);margin-bottom:4px">Nov 2025 – Mei 2026</div>
+              <div class="phase-desc">Core detection engine, multi-tenant workspace, 10+ visualisasi, kill chain, geolocation map, PDF export, user risk profiling, tunable rules, CA Remediation, IOC Export, numeric risk score (0–100), attack campaign grouping, login heatmap, detection explainer, threat intel IP lookup, weekly digest export, baseline drift alert.</div>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-line">
+              <div class="phase-dot" style="background:rgba(0,120,212,0.2);border:2px solid var(--ms-blue);color:var(--ms-accent)">2</div>
+            </div>
+            <div>
+              <div class="phase-title">Phase 2 — Production Ready</div>
+              <div style="font-size:11px;color:var(--ms-accent);margin-bottom:4px">Q3 2026 (Jul – Sep)</div>
+              <div class="phase-desc">Integrasi langsung ke Microsoft Graph API (real-time streaming), Azure AD multi-tenant app registration, autentikasi SSO, role-based access untuk tim SOC.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="phase">
+            <div class="phase-line">
+              <div class="phase-dot" style="background:rgba(255,185,0,0.15);border:2px solid var(--ms-yellow);color:var(--ms-yellow)">3</div>
+            </div>
+            <div>
+              <div class="phase-title">Phase 3 — AI Enhancement</div>
+              <div style="font-size:11px;color:var(--ms-accent);margin-bottom:4px">Q4 2026 (Okt – Des)</div>
+              <div class="phase-desc">Integrasi Azure OpenAI untuk AI-assisted investigation, natural language query atas log, automated incident summary, dan anomaly detection berbasis ML.</div>
+            </div>
+          </div>
+          <div class="phase">
+            <div class="phase-line">
+              <div class="phase-dot" style="background:rgba(128,0,128,0.15);border:2px solid #a855f7;color:#c084fc">4</div>
+            </div>
+            <div>
+              <div class="phase-title">Phase 4 — Platform Scale</div>
+              <div style="font-size:11px;color:var(--ms-accent);margin-bottom:4px">2027</div>
+              <div class="phase-desc">Integrasi Microsoft Sentinel bidirectional, Microsoft Teams alerting, REST API untuk integrasi SOAR, packaging sebagai Azure Marketplace solution untuk ekosistem MSP.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="padding:8px;background:rgba(16,124,16,0.1);border:1px solid rgba(16,124,16,0.25);border-radius:6px;text-align:center;font-size:11px">
+          <div class="ok" style="font-weight:700">✅ Core PoC</div>
+          <div style="color:var(--text3)">Selesai</div>
+        </div>
+        <div style="padding:8px;background:rgba(0,120,212,0.1);border:1px solid rgba(0,120,212,0.25);border-radius:6px;text-align:center;font-size:11px">
+          <div style="color:var(--ms-accent);font-weight:700">🔄 Graph API</div>
+          <div style="color:var(--text3)">Q3 2026</div>
+        </div>
+        <div style="padding:8px;background:rgba(255,185,0,0.08);border:1px solid rgba(255,185,0,0.2);border-radius:6px;text-align:center;font-size:11px">
+          <div style="color:var(--ms-yellow);font-weight:700">🤖 Azure OpenAI</div>
+          <div style="color:var(--text3)">Q4 2026</div>
+        </div>
+        <div style="padding:8px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;text-align:center;font-size:11px">
+          <div style="color:#c084fc;font-weight:700">🚀 Marketplace</div>
+          <div style="color:var(--text3)">2027</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 12 — RISK & MITIGASI
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-14">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Risk Analysis</div>
+        <div class="slide-title">Identifikasi Risiko & Strategi Mitigasi</div>
+      </div>
+      <div class="slide-num">14 / 15</div>
+    </div>
+    <div class="slide-body">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border)">
+            <th style="text-align:left;padding:8px 12px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);width:22%">Risiko</th>
+            <th style="text-align:center;padding:8px 12px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);width:10%">Level</th>
+            <th style="text-align:left;padding:8px 12px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Dampak</th>
+            <th style="text-align:left;padding:8px 12px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Mitigasi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+            <td style="padding:9px 12px;font-weight:600;color:#fff">Data Privacy Klien</td>
+            <td style="padding:9px 12px;text-align:center"><span class="pill pill-red">HIGH</span></td>
+            <td style="padding:9px 12px;color:var(--text2)">Log sign-in mengandung data sensitif user klien</td>
+            <td style="padding:9px 12px;color:var(--text2)">✅ Deployment on-premise / private Azure. Data tidak pernah keluar dari environment klien.</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+            <td style="padding:9px 12px;font-weight:600;color:#fff">False Positive Rate</td>
+            <td style="padding:9px 12px;text-align:center"><span class="pill pill-blue">MED</span></td>
+            <td style="padding:9px 12px;color:var(--text2)">Alert yang tidak akurat membuang waktu SOC</td>
+            <td style="padding:9px 12px;color:var(--text2)">✅ Tunable thresholds per workspace, whitelist trusted IPs/countries, triage workflow.</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+            <td style="padding:9px 12px;font-weight:600;color:#fff">Skalabilitas Storage</td>
+            <td style="padding:9px 12px;text-align:center"><span class="pill pill-blue">MED</span></td>
+            <td style="padding:9px 12px;color:var(--text2)">File-based storage tidak optimal untuk volume sangat besar</td>
+            <td style="padding:9px 12px;color:var(--text2)">✅ Phase 2: migrasi ke Azure Cosmos DB atau Azure SQL untuk scalable storage.</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+            <td style="padding:9px 12px;font-weight:600;color:#fff">Kompetisi dengan Sentinel</td>
+            <td style="padding:9px 12px;text-align:center"><span class="pill pill-gray">LOW</span></td>
+            <td style="padding:9px 12px;color:var(--text2)">Klien enterprise mungkin lebih memilih Sentinel</td>
+            <td style="padding:9px 12px;color:var(--text2)">✅ EIDSA bukan pengganti Sentinel — melengkapi gap untuk SMB & MSP tanpa P2.</td>
+          </tr>
+          <tr>
+            <td style="padding:9px 12px;font-weight:600;color:#fff">Log Format Changes</td>
+            <td style="padding:9px 12px;text-align:center"><span class="pill pill-gray">LOW</span></td>
+            <td style="padding:9px 12px;color:var(--text2)">Microsoft mengubah schema log Entra ID</td>
+            <td style="padding:9px 12px;color:var(--text2)">✅ Parser modular — update schema di satu file. Phase 2 gunakan Graph API yang lebih stabil.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 13 — KESIMPULAN
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-15">
+    <div class="slide-header">
+      <div>
+        <div class="slide-tag">Kesimpulan</div>
+        <div class="slide-title">EIDSA — Dari Inovasi OJT ke Produk TelkomSigma</div>
+      </div>
+      <div class="slide-num">15 / 15</div>
+    </div>
+    <div class="slide-body">
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div class="card card-accent" style="border-left-color:#6bcb77">
+              <div class="label">Inovasi & Relevansi</div>
+              <p style="font-size:12px;margin-top:6px">Solusi orisinal untuk pain point nyata MSP TelkomSigma — monitoring multi-tenant tanpa biaya lisensi premium.</p>
+            </div>
+            <div class="card card-accent">
+              <div class="label">Kelayakan Teknis</div>
+              <p style="font-size:12px;margin-top:6px">Stack teknologi proven (Node.js, Azure-ready), arsitektur modular, dan PoC fully functional yang dapat di-demo hari ini.</p>
+            </div>
+            <div class="card card-accent" style="border-left-color:var(--ms-yellow)">
+              <div class="label">Business Case</div>
+              <p style="font-size:12px;margin-top:6px">Penghematan $49.950+/bulan, MTTR turun 60%, membuka revenue stream baru sebagai premium SOC service.</p>
+            </div>
+            <div class="card card-accent" style="border-left-color:#c084fc">
+              <div class="label">Kematangan PoC</div>
+              <p style="font-size:12px;margin-top:6px">Bukan sekadar mockup. EIDSA fully functional dengan 8+ detection rules, 10+ views, dan 9 fitur baru: CA Remediation, IOC Export, Risk Score, Campaign Grouping, Heatmap, Detection Explainer, Threat Intel, Weekly Digest, Baseline Drift.</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="label" style="margin-bottom:10px">Rekomendasi Next Steps</div>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+              <div style="width:22px;height:22px;border-radius:50%;background:rgba(0,120,212,0.2);border:1px solid rgba(0,120,212,0.4);color:var(--ms-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+              <div style="font-size:12.5px;color:var(--text2)"><strong style="color:#fff">Pilot Internal</strong> — Deploy EIDSA untuk monitoring tenant internal TelkomSigma sebagai uji coba.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+              <div style="width:22px;height:22px;border-radius:50%;background:rgba(0,120,212,0.2);border:1px solid rgba(0,120,212,0.4);color:var(--ms-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+              <div style="font-size:12.5px;color:var(--text2)"><strong style="color:#fff">Client Pilot</strong> — Pilih 2–3 klien MSP sebagai beta tester untuk validasi product-market fit.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+              <div style="width:22px;height:22px;border-radius:50%;background:rgba(0,120,212,0.2);border:1px solid rgba(0,120,212,0.4);color:var(--ms-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+              <div style="font-size:12.5px;color:var(--text2)"><strong style="color:#fff">Graph API Integration</strong> — Phase 2 development untuk real-time monitoring via Microsoft Graph API.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:50%;background:rgba(0,120,212,0.2);border:1px solid rgba(0,120,212,0.4);color:var(--ms-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+              <div style="font-size:12.5px;color:var(--text2)"><strong style="color:#fff">Paketkan sebagai Produk</strong> — "Identity Security Monitoring as a Service" untuk portofolio TelkomSigma.</div>
+            </div>
+          </div>
+          <div style="padding:12px;background:linear-gradient(135deg,rgba(0,120,212,0.15),rgba(80,230,255,0.08));border:1px solid rgba(0,120,212,0.3);border-radius:8px;text-align:center">
+            <div style="font-size:13px;color:var(--text2);margin-bottom:4px">EIDSA bukan hanya tugas OJT —</div>
+            <div style="font-size:15px;font-weight:700;color:#fff">ini adalah <span style="color:var(--ms-accent)">produk yang siap pakai</span></div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px">untuk ekosistem Microsoft MSP TelkomSigma.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- end slide-scaler -->
+</div><!-- end deck -->
+
+<!-- Navigation -->
+<div id="nav">
+  <button onclick="prevSlide()" title="Previous (←)">‹</button>
+  <div class="nav-dots" id="nav-dots"></div>
+  <div id="nav-info">1 / 15</div>
+  <button onclick="nextSlide()" title="Next (→)">›</button>
+</div>
+
+<button id="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+
+<script>
+  const TOTAL = 15;
+  let current = 1;
+
+  function buildDots() {
+    const dots = document.getElementById('nav-dots');
+    for (let i = 1; i <= TOTAL; i++) {
+      const d = document.createElement('div');
+      d.className = 'nav-dot' + (i === 1 ? ' active' : '');
+      d.onclick = () => gotoSlide(i);
+      d.title = `Slide ${i}`;
+      dots.appendChild(d);
+    }
+  }
+
+  function gotoSlide(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.getElementById(`slide-${current}`).classList.remove('active');
+    document.querySelectorAll('.nav-dot')[current - 1].classList.remove('active');
+    current = n;
+    document.getElementById(`slide-${current}`).classList.add('active');
+    document.querySelectorAll('.nav-dot')[current - 1].classList.add('active');
+    document.getElementById('nav-info').textContent = `${current} / ${TOTAL}`;
+  }
+
+  function nextSlide() { gotoSlide(current + 1); }
+  function prevSlide() { gotoSlide(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     { e.preventDefault(); prevSlide(); }
+    if (e.key === 'Home') gotoSlide(1);
+    if (e.key === 'End')  gotoSlide(TOTAL);
+    if (e.key >= '1' && e.key <= '9') gotoSlide(parseInt(e.key));
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  });
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function scaleSlides() {
+    const scaler = document.getElementById('slide-scaler');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - 60; // leave room for nav
+    const scaleX = vw / 1280;
+    const scaleY = vh / 720;
+    const scale = Math.min(scaleX, scaleY) * 0.97;
+    scaler.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleSlides);
+  buildDots();
+  scaleSlides();
+</script>
+</body>
+</html>
