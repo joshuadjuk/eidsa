@@ -2105,3 +2105,24 @@ details > summary::-webkit-details-marker { color: var(--text3); }
 .cam-row-total { margin-left: 5px; font-size: 9.5px; color: var(--text2); font-weight: 400; }
 .cam-legend { display: flex; gap: 10px; align-items: center; margin-top: 9px; font-size: 10.5px; color: var(--text2); }
 .cam-leg-item { padding: 2px 9px; border-radius: 3px; color: var(--text); font-size: 10.5px; }
+
+/* ── Run Delta Panel ──────────────────────────────────────────────────────── */
+.delta-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 8px 13px; margin-bottom: 10px; background: rgba(0,120,212,0.06); border: 1px solid rgba(0,120,212,0.2); border-radius: var(--radius); font-size: 12px; }
+.delta-title { font-weight: 600; color: var(--accent); white-space: nowrap; margin-right: 4px; }
+.delta-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.delta-chip { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; border: 1px solid transparent; cursor: default; }
+.delta-up     { background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.3);  color: var(--danger); }
+.delta-down   { background: rgba(16,185,129,0.1);  border-color: rgba(16,185,129,0.3); color: var(--ok); }
+.delta-new    { background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.25); color: #f87171; }
+.delta-ok     { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25);color: var(--ok); }
+.delta-neutral{ background: rgba(139,148,158,0.1); border-color: rgba(139,148,158,0.2);color: var(--text2); }
+
+/* ── Repeat Offender Badge ────────────────────────────────────────────────── */
+.badge-repeat { background: rgba(245,158,11,0.15) !important; border: 1px solid rgba(245,158,11,0.4) !important; color: var(--warn) !important; }
+.repeat-badge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 8px; font-size: 10px; font-weight: 700; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); color: var(--warn); letter-spacing: 0.3px; }
+
+/* ── User Anomaly Chips ───────────────────────────────────────────────────── */
+.user-anomalies { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.anomaly-chip { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 500; border: 1px solid transparent; }
+.anomaly-high { background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.3);  color: #f87171; }
+.anomaly-med  { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--warn); }

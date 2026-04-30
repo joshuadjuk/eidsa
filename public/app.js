@@ -309,11 +309,17 @@ async function runAnalysis() {
   destroyCharts();
   try {
     state.analysisData = await api('GET', `/api/workspaces/${state.activeWorkspace.id}/analyze`);
-    saveCache(state.activeWorkspace.id, state.analysisData);
+    const wsId = state.activeWorkspace.id;
+    // Save current cache as prev-run snapshot before overwriting
+    const oldCache = loadCache(wsId);
+    if (oldCache) savePrevRun(wsId, oldCache.data);
+    saveCache(wsId, state.analysisData);
     // Auto-save baseline on first run for this workspace
-    if (!loadBaseline(state.activeWorkspace.id)) {
-      saveBaseline(state.activeWorkspace.id, extractBaselineMetrics(state.analysisData));
+    if (!loadBaseline(wsId)) {
+      saveBaseline(wsId, extractBaselineMetrics(state.analysisData));
     }
+    mergeRunHistory(wsId, state.analysisData);
+    updateUserProfiles(wsId, state.analysisData.events || []);
     state.eventsPage = 1;
     state.activeTab = 'dashboard';
     renderAnalysis();
@@ -568,6 +574,7 @@ function renderDashboard(data) {
     <div class="dashboard-grid">
       <div class="dashboard-main">
         ${renderDriftBanner(data)}
+        ${renderDeltaPanel(data)}
         ${alertBanners}
         ${watchSection}
         ${critSection}
@@ -643,6 +650,13 @@ function renderRiskCard(s, collapsed = false) {
     ? `<div class="rc-note-badge" title="${escHtml(state.userNotes[s.user])}">📝 ${escHtml(state.userNotes[s.user].slice(0, 60))}${state.userNotes[s.user].length > 60 ? '…' : ''}</div>`
     : '';
 
+  const userHist = state.activeWorkspace ? getUserHistory(state.activeWorkspace.id, s.user) : null;
+  const repeatBadge = userHist && userHist.count > 1
+    ? `<span class="repeat-badge" title="Seen in ${userHist.count} previous runs — first: ${new Date(userHist.firstSeen).toLocaleDateString('en-GB')}">REPEAT ${userHist.count}×</span>`
+    : '';
+
+  const anomalyChips = renderUserAnomalyChips(s.user);
+
   return `
     <div class="risk-card ${cls}" id="${cardId}">
       <div class="rc-header" onclick="toggleRiskCard('${cardId}')">
@@ -652,8 +666,10 @@ function renderRiskCard(s, collapsed = false) {
           <div class="rc-meta">
             <span class="risk-badge ${rbCls}">${s.riskLevel}</span>
             ${s.riskScore != null ? `<span class="risk-score-badge risk-score-${s.riskLevel.toLowerCase()}" title="Risk Score: ${s.riskScore}/100">${s.riskScore}<span style="font-size:9px;opacity:0.7">/100</span></span>` : ''}
+            ${repeatBadge}
             <span class="rc-threat">${escHtml(s.primaryThreat)}</span>
           </div>
+          ${anomalyChips}
         </div>
         <button class="rc-expand-btn${isPinned ? ' rc-pin-active' : ''}" onclick="event.stopPropagation();toggleWatchList('${escHtml(s.user)}')" title="${isPinned ? 'Unpin from Watch List' : 'Pin to Watch List'}" style="font-size:14px">${isPinned ? '⭐' : '☆'}</button>
         <button class="rc-expand-btn" onclick="event.stopPropagation();openTimeline('${escHtml(s.user)}')" title="View full timeline" style="margin-left:4px">↗</button>
@@ -4459,16 +4475,21 @@ function getIPInfo(ip) {
 
 function renderIPEnrich(ip) {
   const info = getIPInfo(ip);
-  if (!info) return '';
   const badges = [];
-  const ti = lookupThreatIntel(info);
-  if (ti) badges.push(`<span class="ip-badge ${ti.cls}" title="Threat Intel: ${escHtml(ti.tag)}">${escHtml(ti.tag)}</span>`);
-  else {
-    if (info.proxy)   badges.push('<span class="ip-badge badge-proxy">PROXY</span>');
-    if (info.hosting) badges.push('<span class="ip-badge badge-hosting">VPS</span>');
-    if (info.mobile)  badges.push('<span class="ip-badge badge-mobile">MOBILE</span>');
+  if (info) {
+    const ti = lookupThreatIntel(info);
+    if (ti) badges.push(`<span class="ip-badge ${ti.cls}" title="Threat Intel: ${escHtml(ti.tag)}">${escHtml(ti.tag)}</span>`);
+    else {
+      if (info.proxy)   badges.push('<span class="ip-badge badge-proxy">PROXY</span>');
+      if (info.hosting) badges.push('<span class="ip-badge badge-hosting">VPS</span>');
+      if (info.mobile)  badges.push('<span class="ip-badge badge-mobile">MOBILE</span>');
+    }
   }
-  const label = (info.isp || info.org || '').replace(/^AS\d+\s*/, '').slice(0, 28);
+  const hist = state.activeWorkspace ? getIPHistory(state.activeWorkspace.id, ip) : null;
+  if (hist && hist.count > 1) {
+    badges.push(`<span class="ip-badge badge-repeat" title="Seen in ${hist.count} previous runs — first: ${new Date(hist.firstSeen).toLocaleDateString('en-GB')}">REPEAT ${hist.count}×</span>`);
+  }
+  const label = info ? (info.isp || info.org || '').replace(/^AS\d+\s*/, '').slice(0, 28) : '';
   if (!badges.length && !label) return '';
   return `<div class="ip-enrich">${badges.join('')}${label ? `<span class="ip-isp" title="${escHtml(info.isp || info.org || '')}">${escHtml(label)}</span>` : ''}</div>`;
 }
@@ -4492,6 +4513,10 @@ function openIPPivot(ip) {
 
   const ti = lookupThreatIntel(info);
   const tiRow = ti ? `<div class="ipp-enrich-row ipp-ti-row"><span class="ipp-el">Threat Intel</span><span class="ip-badge ${ti.cls}" style="font-size:11px">${escHtml(ti.tag)}</span><span class="ipp-ti-risk" data-risk="${ti.risk}">${ti.risk} RISK</span></div>` : '';
+  const ipHist = state.activeWorkspace ? getIPHistory(state.activeWorkspace.id, ip) : null;
+  const histRow = ipHist && ipHist.count > 1
+    ? `<div class="ipp-enrich-row"><span class="ipp-el">Run History</span><span class="ip-badge badge-repeat" style="font-size:11px">REPEAT ${ipHist.count}×</span><span style="font-size:11px;color:var(--text2);margin-left:6px">first: ${new Date(ipHist.firstSeen).toLocaleDateString('en-GB')}</span></div>`
+    : '';
   const enrichRows = info ? [
     tiRow,
     info.isp ? `<div class="ipp-enrich-row"><span class="ipp-el">ISP</span><span>${escHtml(info.isp)}</span></div>` : '',
@@ -4548,7 +4573,7 @@ function openIPPivot(ip) {
         <button class="timeline-close" onclick="closeIPPivot()">✕</button>
       </div>
       <div class="ipp-body">
-        ${enrichRows ? `<div class="ipp-section"><div class="ipp-section-title">Enrichment</div>${enrichRows}</div>` : ''}
+        ${enrichRows || histRow ? `<div class="ipp-section"><div class="ipp-section-title">Enrichment</div>${enrichRows}${histRow}</div>` : ''}
         <div class="ipp-stats-row">
           <div class="ipp-stat"><strong>${ipEvents.length}</strong><span>Events</span></div>
           <div class="ipp-stat"><strong>${successes}</strong><span>Successful</span></div>
@@ -4652,6 +4677,217 @@ function formatDate(str) {
   const d = new Date(str);
   if (isNaN(d)) return str;
   return d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+/* ── Cross-Run IP/User History ───────────────────────────────────────────── */
+function histKey(wsId)    { return `eidsa_history_${wsId}`; }
+
+function loadHistory(wsId) {
+  try { return JSON.parse(localStorage.getItem(histKey(wsId))) || { ips: {}, users: {} }; }
+  catch { return { ips: {}, users: {} }; }
+}
+
+function saveHistory(wsId, h) {
+  localStorage.setItem(histKey(wsId), JSON.stringify(h));
+}
+
+function mergeRunHistory(wsId, data) {
+  const h = loadHistory(wsId);
+  const now = Date.now();
+  const events = data.events || [];
+  const detections = data.detections || [];
+  const homeCountry = (data.homeCountry || '').toUpperCase();
+
+  const attackIPs = new Set();
+  for (const d of detections) {
+    if (d.ip) attackIPs.add(d.ip);
+    if (d.ips) d.ips.forEach(ip => attackIPs.add(ip));
+  }
+  for (const e of events) {
+    if (e.ipAddress && e.country && e.country.toUpperCase() !== homeCountry) {
+      attackIPs.add(e.ipAddress);
+    }
+  }
+  for (const ip of attackIPs) {
+    if (!h.ips[ip]) h.ips[ip] = { count: 0, firstSeen: now };
+    h.ips[ip].count++;
+    h.ips[ip].lastSeen = now;
+  }
+
+  const detUsers = new Set();
+  for (const d of detections) {
+    if (d.user) detUsers.add(d.user);
+    if (d.affectedUsers) d.affectedUsers.forEach(u => detUsers.add(u));
+  }
+  for (const user of detUsers) {
+    if (!h.users[user]) h.users[user] = { count: 0, firstSeen: now };
+    h.users[user].count++;
+    h.users[user].lastSeen = now;
+  }
+  saveHistory(wsId, h);
+}
+
+function getIPHistory(wsId, ip) {
+  return loadHistory(wsId).ips[ip] || null;
+}
+
+function getUserHistory(wsId, user) {
+  return loadHistory(wsId).users[user] || null;
+}
+
+/* ── Run Delta / Log Diff ─────────────────────────────────────────────────── */
+function prevRunKey(wsId) { return `eidsa_prevrun_${wsId}`; }
+
+function loadPrevRun(wsId) {
+  try { return JSON.parse(localStorage.getItem(prevRunKey(wsId))); }
+  catch { return null; }
+}
+
+function savePrevRun(wsId, data) {
+  const snap = {
+    ts: Date.now(),
+    detectionCount: (data.detections || []).length,
+    atRiskUsers: [...new Set((data.detections || [])
+      .flatMap(d => [d.user, ...(d.affectedUsers || [])]).filter(Boolean))],
+    detectionTypes: [...new Set((data.detections || []).map(d => d.type))],
+    attackingIPs: [...new Set((data.detections || [])
+      .flatMap(d => [d.ip, ...(d.ips || [])]).filter(Boolean))],
+    attackingCountries: [...new Set((data.events || [])
+      .filter(e => !e.success && e.country && e.country.toUpperCase() !== (data.homeCountry || '').toUpperCase())
+      .map(e => e.country))],
+    totalEvents: (data.events || []).length,
+  };
+  localStorage.setItem(prevRunKey(wsId), JSON.stringify(snap));
+}
+
+function renderDeltaPanel(data) {
+  const prev = loadPrevRun(state.activeWorkspace?.id);
+  if (!prev) return '';
+
+  const curr = {
+    atRiskUsers: [...new Set((data.detections || [])
+      .flatMap(d => [d.user, ...(d.affectedUsers || [])]).filter(Boolean))],
+    detectionTypes: [...new Set((data.detections || []).map(d => d.type))],
+    attackingIPs: [...new Set((data.detections || [])
+      .flatMap(d => [d.ip, ...(d.ips || [])]).filter(Boolean))],
+    attackingCountries: [...new Set((data.events || [])
+      .filter(e => !e.success && e.country && e.country.toUpperCase() !== (data.homeCountry || '').toUpperCase())
+      .map(e => e.country))],
+    detectionCount: (data.detections || []).length,
+  };
+
+  const newUsers       = curr.atRiskUsers.filter(u => !prev.atRiskUsers.includes(u));
+  const resolvedUsers  = prev.atRiskUsers.filter(u => !curr.atRiskUsers.includes(u));
+  const newTypes       = curr.detectionTypes.filter(t => !prev.detectionTypes.includes(t));
+  const goneTypes      = prev.detectionTypes.filter(t => !curr.detectionTypes.includes(t));
+  const newIPs         = curr.attackingIPs.filter(ip => !prev.attackingIPs.includes(ip));
+  const newCountries   = curr.attackingCountries.filter(c => !prev.attackingCountries.includes(c));
+  const goneCountries  = prev.attackingCountries.filter(c => !curr.attackingCountries.includes(c));
+  const detDelta       = curr.detectionCount - prev.detectionCount;
+
+  const unchanged = !newUsers.length && !resolvedUsers.length && !newTypes.length &&
+    !goneTypes.length && !newIPs.length && !newCountries.length && !goneCountries.length && detDelta === 0;
+  if (unchanged) return '';
+
+  const prevMin = Math.round((Date.now() - prev.ts) / 60000);
+  const prevAge = prevMin < 60 ? `${prevMin}m ago` : prevMin < 1440 ? `${Math.round(prevMin/60)}h ago` : `${Math.round(prevMin/1440)}d ago`;
+
+  const chips = [];
+  if (detDelta !== 0) chips.push(`<span class="delta-chip ${detDelta > 0 ? 'delta-up' : 'delta-down'}">${detDelta > 0 ? '↑' : '↓'} ${Math.abs(detDelta)} detections</span>`);
+  newUsers.forEach(u     => chips.push(`<span class="delta-chip delta-new" title="${escHtml(u)}">🆕 ${escHtml(u.split('@')[0])}</span>`));
+  resolvedUsers.forEach(u=> chips.push(`<span class="delta-chip delta-ok" title="${escHtml(u)}">✓ ${escHtml(u.split('@')[0])}</span>`));
+  newTypes.forEach(t     => chips.push(`<span class="delta-chip delta-new">🆕 ${t.replace(/_/g,' ')}</span>`));
+  goneTypes.forEach(t    => chips.push(`<span class="delta-chip delta-ok">✓ ${t.replace(/_/g,' ')}</span>`));
+  newIPs.slice(0, 5).forEach(ip => chips.push(`<span class="delta-chip delta-new ip-link" onclick="event.stopPropagation();openIPPivot('${escHtml(ip)}')" style="cursor:pointer">🆕 ${escHtml(ip)}</span>`));
+  if (newIPs.length > 5) chips.push(`<span class="delta-chip delta-neutral">+${newIPs.length - 5} new IPs</span>`);
+  newCountries.forEach(c => chips.push(`<span class="delta-chip delta-new">🌍 ${escHtml(c)}</span>`));
+  goneCountries.forEach(c=> chips.push(`<span class="delta-chip delta-ok">✓ ${escHtml(c)}</span>`));
+
+  return `<div class="delta-panel">
+    <span class="delta-title">🔄 vs Run <span style="opacity:0.6;font-weight:400">${prevAge}</span></span>
+    <div class="delta-chips">${chips.join('')}</div>
+  </div>`;
+}
+
+/* ── Per-User Behavior Profiles ──────────────────────────────────────────── */
+function profilesKey(wsId) { return `eidsa_profiles_${wsId}`; }
+
+function loadProfiles(wsId) {
+  try { return JSON.parse(localStorage.getItem(profilesKey(wsId))) || {}; }
+  catch { return {}; }
+}
+
+function saveProfiles(wsId, profiles) {
+  localStorage.setItem(profilesKey(wsId), JSON.stringify(profiles));
+}
+
+function updateUserProfiles(wsId, events) {
+  const profiles = loadProfiles(wsId);
+  const successEvents = events.filter(e => e.success && e.userPrincipal);
+  const seenUsers = new Set();
+
+  for (const e of successEvents) {
+    const u = e.userPrincipal;
+    if (!profiles[u]) profiles[u] = { hours: {}, countries: {}, apps: {}, runCount: 0 };
+    const p = profiles[u];
+    if (e.createdAt) {
+      const h = new Date(e.createdAt).getHours();
+      if (!isNaN(h)) p.hours[h] = (p.hours[h] || 0) + 1;
+    }
+    if (e.country)         p.countries[e.country]         = (p.countries[e.country]         || 0) + 1;
+    if (e.appDisplayName)  p.apps[e.appDisplayName]        = (p.apps[e.appDisplayName]        || 0) + 1;
+    seenUsers.add(u);
+  }
+  for (const u of seenUsers) {
+    if (profiles[u]) profiles[u].runCount = (profiles[u].runCount || 0) + 1;
+  }
+  saveProfiles(wsId, profiles);
+}
+
+function detectUserAnomalies(userPrincipal) {
+  if (!state.activeWorkspace || !state.analysisData) return [];
+  const profiles = loadProfiles(state.activeWorkspace.id);
+  const p = profiles[userPrincipal];
+  if (!p || (p.runCount || 0) < 2) return [];
+
+  const events = (state.analysisData.events || []).filter(e => e.userPrincipal === userPrincipal && e.success);
+  const anomalies = [];
+
+  // Unusual hour — login outside their normal window (only flag late night/early morning deviations)
+  const topHours = Object.entries(p.hours).sort(([,a],[,b]) => b-a).slice(0,8).map(([h]) => parseInt(h));
+  const offHourEvts = events.filter(e => {
+    if (!e.createdAt) return false;
+    const h = new Date(e.createdAt).getHours();
+    return !topHours.includes(h) && (h < 6 || h > 22);
+  });
+  if (offHourEvts.length) {
+    const hrs = [...new Set(offHourEvts.map(e => new Date(e.createdAt).getHours()))];
+    anomalies.push({ type: 'UNUSUAL_HOUR', label: `Unusual hour (${hrs.join(', ')}:00)`, risk: 'med' });
+  }
+
+  // New country not in profile history
+  const knownCtry = new Set(Object.keys(p.countries));
+  const newCtry = [...new Set(events.filter(e => e.country && !knownCtry.has(e.country)).map(e => e.country))];
+  if (newCtry.length) {
+    anomalies.push({ type: 'UNUSUAL_COUNTRY', label: `New country: ${newCtry.slice(0,3).join(', ')}`, risk: 'high' });
+  }
+
+  // Volume spike — 3× above average per run
+  const totalSucc = Object.values(p.hours).reduce((a,b) => a+b, 0);
+  const avgPerRun = totalSucc / Math.max(p.runCount, 1);
+  if (events.length > avgPerRun * 3 && events.length > 10) {
+    anomalies.push({ type: 'HIGH_VOLUME', label: `High volume (${events.length} vs avg ${Math.round(avgPerRun)})`, risk: 'med' });
+  }
+
+  return anomalies;
+}
+
+function renderUserAnomalyChips(userPrincipal) {
+  const anomalies = detectUserAnomalies(userPrincipal);
+  if (!anomalies.length) return '';
+  return `<div class="user-anomalies">${anomalies.map(a =>
+    `<span class="anomaly-chip anomaly-${a.risk}" title="Behavior deviation from baseline">⚠ ${escHtml(a.label)}</span>`
+  ).join('')}</div>`;
 }
 
 /* ── Global keyboard shortcuts ────────────────────────────────────────────── */
