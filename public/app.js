@@ -4355,13 +4355,13 @@ function initAttackGraph() {
   const sevColor  = s => s === 'high' ? '#f16060' : s === 'medium' ? '#f5a623' : '#5b8def';
   const riskColor = r => r === 'CRITICAL' ? '#f16060' : r === 'HIGH' ? '#f5a623' : '#5b8def';
 
-  const bezier = (fk, tk, color) => {
+  const bezier = (fk, tk, color, eid) => {
     const f = nodePos[fk]; const t = nodePos[tk];
     if (!f || !t) return '';
     const x1 = f.x + f.w, y1 = f.y + f.h / 2;
     const x2 = t.x,        y2 = t.y + t.h / 2;
     const cx = (x1 + x2) / 2;
-    return `<path d="M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.5"/>`;
+    return `<path data-edgeid="${eid}" data-from="${fk}" data-to="${tk}" d="M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.45"/>`;
   };
 
   const ipBadge = ip => {
@@ -4375,10 +4375,10 @@ function initAttackGraph() {
   const ipNodesSVG = topIPs.map(([ip, s], i) => {
     const { x, y, w, h } = nodePos['ip:'+ip];
     const lbl = ip.length > 17 ? ip.slice(0, 15) + '…' : ip;
-    return `<g style="cursor:pointer" onclick="filterEventsByIP('${escHtml(ip)}')">
-      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="#f16060" stroke-width="1.5"/>
+    return `<g data-nodeid="ip:${escHtml(ip)}" style="cursor:pointer" onclick="filterEventsByIP('${escHtml(ip)}')">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="#f16060" stroke-width="1.5" class="graph-node-rect"/>
       <text x="${x+8}" y="${y+14}" font-size="11" fill="#f16060" font-family="monospace,sans-serif">${escHtml(lbl)}${ipBadge(ip)}</text>
-      <text x="${x+8}" y="${y+28}" font-size="10" fill="#7a88a4">${escHtml(s.country)} · ${s.count} events</text>
+      <text x="${x+8}" y="${y+28}" font-size="10" fill="#8ba0bb">${escHtml(s.country)} · ${s.count} events</text>
     </g>`;
   });
 
@@ -4386,10 +4386,10 @@ function initAttackGraph() {
     const { x, y, w, h } = nodePos['user:'+s.user];
     const color = riskColor(s.riskLevel);
     const lbl   = (s.displayName || s.user).slice(0, 20);
-    return `<g style="cursor:pointer" onclick="openTimeline('${escHtml(s.user)}')">
-      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="${color}" stroke-width="1.5"/>
+    return `<g data-nodeid="user:${escHtml(s.user)}" style="cursor:pointer" onclick="openTimeline('${escHtml(s.user)}')">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="${color}" stroke-width="1.5" class="graph-node-rect"/>
       <text x="${x+8}" y="${y+14}" font-size="11" fill="${color}">${escHtml(lbl)}</text>
-      <text x="${x+8}" y="${y+28}" font-size="10" fill="#7a88a4">${s.riskLevel} · ${s.foreignAttempts} foreign</text>
+      <text x="${x+8}" y="${y+28}" font-size="10" fill="#8ba0bb">${s.riskLevel} · ${s.foreignAttempts} foreign</text>
     </g>`;
   });
 
@@ -4398,20 +4398,20 @@ function initAttackGraph() {
     const color = sevColor(info.severity);
     const lbl   = dt.replace(/_/g, ' ');
     const trunc = lbl.length > 19 ? lbl.slice(0, 17) + '…' : lbl;
-    return `<g>
-      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="${color}" stroke-width="1.5"/>
+    return `<g data-nodeid="det:${escHtml(dt)}">
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="#1d2438" stroke="${color}" stroke-width="1.5" class="graph-node-rect"/>
       <text x="${x+8}" y="${y+14}" font-size="11" fill="${color}">${escHtml(trunc)}</text>
-      <text x="${x+8}" y="${y+28}" font-size="10" fill="#7a88a4">${info.severity} · ${info.users.size} user${info.users.size !== 1 ? 's' : ''}</text>
+      <text x="${x+8}" y="${y+28}" font-size="10" fill="#8ba0bb">${info.severity} · ${info.users.size} user${info.users.size !== 1 ? 's' : ''}</text>
     </g>`;
   });
 
-  const edgeSVG1 = edges1.map(({ from, to }) => bezier('ip:'+from, 'user:'+to, 'rgba(241,96,96,0.25)'));
-  const edgeSVG2 = edges2.map(({ from, to }) => bezier('user:'+from, 'det:'+to, 'rgba(245,166,35,0.25)'));
+  const edgeSVG1 = edges1.map(({ from, to }, i) => bezier('ip:'+from, 'user:'+to, '#f16060', `e1_${i}`));
+  const edgeSVG2 = edges2.map(({ from, to }, i) => bezier('user:'+from, 'det:'+to, '#f5a623', `e2_${i}`));
 
   const labels = [
-    `<text x="${xIP+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#4d5a72" font-weight="600" letter-spacing="1">ATTACKER IPs</text>`,
-    `<text x="${xUser+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#4d5a72" font-weight="600" letter-spacing="1">TARGETED USERS</text>`,
-    `<text x="${xDet+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#4d5a72" font-weight="600" letter-spacing="1">DETECTIONS</text>`,
+    `<text x="${xIP+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#617898" font-weight="600" letter-spacing="1">ATTACKER IPs</text>`,
+    `<text x="${xUser+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#617898" font-weight="600" letter-spacing="1">TARGETED USERS</text>`,
+    `<text x="${xDet+NW/2}" y="18" text-anchor="middle" font-size="10" fill="#617898" font-weight="600" letter-spacing="1">DETECTIONS</text>`,
   ].join('');
 
   container.innerHTML = `
@@ -4427,6 +4427,76 @@ function initAttackGraph() {
         <span><span class="graph-legend-dot" style="background:#5b8def"></span>Detection types</span>
       </div>
     </div>`;
+
+  // ── Hover highlighting ────────────────────────────────────────────────────
+  const svg = container.querySelector('svg');
+  if (!svg) return;
+  const allNodes = [...svg.querySelectorAll('[data-nodeid]')];
+  const allEdges = [...svg.querySelectorAll('[data-edgeid]')];
+
+  const getConnected = nodeId => {
+    const connNodes = new Set([nodeId]);
+    const connEdges = new Set();
+    const type = nodeId.split(':')[0];
+
+    // 1-hop: direct edges in/out of this node
+    for (const e of allEdges) {
+      if (e.dataset.from === nodeId) { connEdges.add(e.dataset.edgeid); connNodes.add(e.dataset.to); }
+      if (e.dataset.to   === nodeId) { connEdges.add(e.dataset.edgeid); connNodes.add(e.dataset.from); }
+    }
+
+    // 2nd hop: for IP follow forward through users to dets; for det follow backward through users to IPs
+    if (type === 'ip') {
+      for (const e of allEdges) {
+        if (connNodes.has(e.dataset.from) && e.dataset.from.startsWith('user:')) {
+          connEdges.add(e.dataset.edgeid); connNodes.add(e.dataset.to);
+        }
+      }
+    } else if (type === 'det') {
+      for (const e of allEdges) {
+        if (connNodes.has(e.dataset.to) && e.dataset.to.startsWith('user:')) {
+          connEdges.add(e.dataset.edgeid); connNodes.add(e.dataset.from);
+        }
+      }
+    }
+    return { connNodes, connEdges };
+  };
+
+  const applyHover = hoveredNode => {
+    const { connNodes, connEdges } = getConnected(hoveredNode.dataset.nodeid);
+    for (const n of allNodes) {
+      const active = connNodes.has(n.dataset.nodeid);
+      n.style.opacity = active ? '1' : '0.1';
+      const rect = n.querySelector('rect');
+      if (rect) rect.setAttribute('stroke-width', active && n === hoveredNode ? '2.5' : '1.5');
+    }
+    for (const e of allEdges) {
+      if (connEdges.has(e.dataset.edgeid)) {
+        e.style.opacity = '1';
+        e.setAttribute('stroke-width', '2.5');
+      } else {
+        e.style.opacity = '0.04';
+        e.setAttribute('stroke-width', '1.5');
+      }
+    }
+  };
+
+  const clearHover = () => {
+    for (const n of allNodes) {
+      n.style.opacity = '';
+      const rect = n.querySelector('rect');
+      if (rect) rect.setAttribute('stroke-width', '1.5');
+    }
+    for (const e of allEdges) {
+      e.style.opacity = '';
+      e.setAttribute('stroke-width', '1.5');
+    }
+  };
+
+  for (const node of allNodes) {
+    node.addEventListener('mouseenter', () => applyHover(node));
+    node.addEventListener('mouseleave', clearHover);
+  }
 }
 
 /* ── IP Enrichment ────────────────────────────────────────────────────────── */
