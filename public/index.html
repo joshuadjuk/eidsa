@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EIDSA – Entra ID Signin Analyzer</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -61,7 +62,7 @@
       </button>
       <div id="right-nav-items" class="right-nav-items"></div>
       <div class="rnav-footer">
-        <button class="btn-theme-toggle" onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle dark/light">☀</button>
+        <button class="btn-theme-toggle" onclick="toggleTheme()" id="btn-theme-toggle" title="Toggle dark/light"><i class="bi bi-sun-fill"></i></button>
       </div>
     </nav>
   </div>
@@ -70,7 +71,7 @@
   <div id="modal-overlay" class="hidden" onclick="closeModal()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <div class="modal-icon">🏢</div>
+        <div class="modal-icon"><i class="bi bi-building"></i></div>
         <h3 id="modal-title">New Workspace</h3>
       </div>
       <label>Workspace Name *</label>

@@ -189,17 +189,17 @@ function renderWorkspaceView() {
         <h1>${escHtml(ws.name)}</h1>
         <div class="ws-breadcrumb">
           ${ws.tenant ? `<span>${escHtml(ws.tenant)}</span><span>·</span>` : ''}
-          <span class="home-badge">🏠 ${escHtml(ws.homeCountry || 'ID')}</span>
+          <span class="home-badge"><i class="bi bi-house-fill"></i> ${escHtml(ws.homeCountry || 'ID')}</span>
         </div>
       </div>
       <div class="ws-header-actions">
         <button class="btn-secondary" onclick="editWorkspaceModal()">Edit</button>
-        <button class="btn-primary" onclick="runAnalysis()">▶ Run Analysis</button>
-        <button class="btn-secondary" onclick="openIOCSearch()" id="btn-ioc-search" title="IOC Search (press /)" style="display:none">🔍 IOC Search</button>
-        <button class="btn-secondary" onclick="exportPDF()" id="btn-export-pdf" title="Export analysis as PDF" style="display:none">⬇ Export PDF</button>
-        <button class="btn-secondary" onclick="exportExecutiveSummary()" id="btn-exec-summary" title="Executive Summary (management view)" style="display:none">📋 Executive</button>
-        <button class="btn-secondary" onclick="exportWeeklyDigest()" id="btn-weekly-digest" title="Weekly Digest — full security brief (HTML)" style="display:none">📨 Digest</button>
-        <button class="btn-secondary" onclick="setBaselineNow()" id="btn-set-baseline" title="Save current run as drift baseline for future comparisons" style="display:none">📊 Set Baseline</button>
+        <button class="btn-primary" onclick="runAnalysis()"><i class="bi bi-play-fill"></i> Run Analysis</button>
+        <button class="btn-secondary" onclick="openIOCSearch()" id="btn-ioc-search" title="IOC Search (press /)" style="display:none"><i class="bi bi-search"></i> IOC Search</button>
+        <button class="btn-secondary" onclick="exportPDF()" id="btn-export-pdf" title="Export analysis as PDF" style="display:none"><i class="bi bi-download"></i> Export PDF</button>
+        <button class="btn-secondary" onclick="exportExecutiveSummary()" id="btn-exec-summary" title="Executive Summary (management view)" style="display:none"><i class="bi bi-clipboard"></i> Executive</button>
+        <button class="btn-secondary" onclick="exportWeeklyDigest()" id="btn-weekly-digest" title="Weekly Digest — full security brief (HTML)" style="display:none"><i class="bi bi-envelope"></i> Digest</button>
+        <button class="btn-secondary" onclick="setBaselineNow()" id="btn-set-baseline" title="Save current run as drift baseline for future comparisons" style="display:none"><i class="bi bi-bar-chart-fill"></i> Set Baseline</button>
         <button class="btn-danger" onclick="deleteWorkspace()">Delete</button>
       </div>
     </div>
@@ -216,12 +216,12 @@ function renderWorkspaceView() {
 function renderPlaybook(ws) {
   if (!ws.playbook) return `
     <div class="playbook-box">
-      <div class="section-label">📋 Playbook / Notes</div>
+      <div class="section-label"><i class="bi bi-journal-text"></i> Playbook / Notes</div>
       <p style="color:var(--text3);font-style:italic">No playbook set — click Edit to add investigation context, known IPs, or baseline countries.</p>
     </div>`;
   return `
     <div class="playbook-box">
-      <div class="section-label">📋 Playbook / Notes</div>
+      <div class="section-label"><i class="bi bi-journal-text"></i> Playbook / Notes</div>
       <p>${escHtml(ws.playbook)}</p>
     </div>`;
 }
@@ -230,16 +230,16 @@ function renderFileSection(ws) {
   const files = ws.files || [];
   const fileItems = files.map(f => `
     <div class="file-item">
-      <span class="file-item-icon">📄</span>
+      <span class="file-item-icon"><i class="bi bi-file-text"></i></span>
       <span class="file-item-name">${escHtml(f.name)}</span>
       <span class="file-item-size">${formatBytes(f.size)}</span>
-      <button class="file-item-del" onclick="deleteFile('${escHtml(f.name)}')" title="Remove">✕</button>
+      <button class="file-item-del" onclick="deleteFile('${escHtml(f.name)}')" title="Remove"><i class="bi bi-trash3"></i></button>
     </div>`).join('');
 
   return `
     <div class="file-section">
       <div class="file-section-header">
-        <div class="section-label">📂 Sign-in Log Files <span style="color:var(--accent);margin-left:4px">${files.length}</span></div>
+        <div class="section-label"><i class="bi bi-folder"></i> Sign-in Log Files <span style="color:var(--accent);margin-left:4px">${files.length}</span></div>
       </div>
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
         <input type="file" id="file-input" multiple accept=".json" onchange="uploadFiles(this.files)" />
@@ -433,7 +433,7 @@ function renderAnalysis() {
   const warnings = (data.parseWarnings || []).filter(w => w.truncated);
   const warningBanner = warnings.length > 0 ? `
     <div style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--warn)">
-      ⚠ ${warnings.map(w => w.error
+      <i class="bi bi-exclamation-triangle"></i> ${warnings.map(w => w.error
         ? `<strong>${escHtml(w.file)}</strong> — failed to parse (${escHtml(w.error)})`
         : `<strong>${escHtml(w.file)}</strong> — file was truncated, recovered <strong>${w.recovered.toLocaleString()}</strong> events (partial data)`
       ).join('<br>')}
@@ -442,7 +442,7 @@ function renderAnalysis() {
   const breachMatches = data.breachMatches || [];
   const breachBanner = breachMatches.length > 0 ? `
     <div style="background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.35);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#dc2626">
-      🔓 <strong>Breach Alert:</strong> ${breachMatches.length} user(s) found in uploaded breach list — credentials may be compromised:
+      <i class="bi bi-unlock-fill"></i> <strong>Breach Alert:</strong> ${breachMatches.length} user(s) found in uploaded breach list — credentials may be compromised:
       <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px">${breachMatches.map(u=>`<strong style="background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);border-radius:4px;padding:1px 8px">${escHtml(u)}</strong>`).join('')}</div>
     </div>` : '';
 
@@ -453,42 +453,42 @@ function renderAnalysis() {
         <!-- Stats always shown inside dashboard -->
         <div class="stats-grid">
           <div class="stat-card info">
-            <div class="stat-icon">📊</div>
+            <div class="stat-icon"><i class="bi bi-bar-chart-fill"></i></div>
             <div class="stat-label">Total Events</div>
             <div class="stat-value">${events.length.toLocaleString()}</div>
           </div>
           <div class="stat-card ok">
-            <div class="stat-icon">✅</div>
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
             <div class="stat-label">Successful</div>
             <div class="stat-value">${successes.toLocaleString()}</div>
           </div>
           <div class="stat-card danger">
-            <div class="stat-icon">❌</div>
+            <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
             <div class="stat-label">Failed</div>
             <div class="stat-value">${failures.toLocaleString()}</div>
           </div>
           <div class="stat-card ${foreignLogins > 0 ? 'warn' : 'ok'}">
-            <div class="stat-icon">🌍</div>
+            <div class="stat-icon"><i class="bi bi-globe"></i></div>
             <div class="stat-label">Foreign Logins</div>
             <div class="stat-value">${foreignLogins.toLocaleString()}</div>
           </div>
           <div class="stat-card ${compromisedUsers.size > 0 ? 'danger' : 'ok'}">
-            <div class="stat-icon">⚠️</div>
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
             <div class="stat-label">Accounts at Risk</div>
             <div class="stat-value">${compromisedUsers.size}</div>
           </div>
           <div class="stat-card info">
-            <div class="stat-icon">📍</div>
+            <div class="stat-icon"><i class="bi bi-geo-alt-fill"></i></div>
             <div class="stat-label">Countries</div>
             <div class="stat-value">${uniqueCountries}</div>
           </div>
           <div class="stat-card ${highFindings > 0 ? 'danger' : 'ok'}">
-            <div class="stat-icon">🚨</div>
+            <div class="stat-icon"><i class="bi bi-shield-exclamation"></i></div>
             <div class="stat-label">High Findings</div>
             <div class="stat-value">${highFindings}</div>
           </div>
           <div class="stat-card info">
-            <div class="stat-icon">👤</div>
+            <div class="stat-icon"><i class="bi bi-person-fill"></i></div>
             <div class="stat-label">Unique Users</div>
             <div class="stat-value">${uniqueUsers.toLocaleString()}</div>
           </div>
@@ -572,7 +572,7 @@ function renderDashboard(data) {
       const apps = (s.successfulForeignApps || []).slice(0, 2).join(' & ');
       return `
         <div class="alert-banner">
-          <div class="alert-banner-icon">🚨</div>
+          <div class="alert-banner-icon"><i class="bi bi-shield-exclamation"></i></div>
           <div class="alert-banner-body">
             <div class="alert-banner-title">Critical — Successful Foreign Login</div>
             <div class="alert-banner-text">
@@ -589,7 +589,7 @@ function renderDashboard(data) {
 
   const critSection = criticalUsers.length + highUsers.length > 0 ? `
     <div id="risk-group-high" class="risk-section">
-      <div class="section-heading">🔴 High-Risk Accounts <span class="count-badge">${criticalUsers.length + highUsers.length}</span></div>
+      <div class="section-heading"><i class="bi bi-circle-fill" style="color:#ef4444"></i> High-Risk Accounts <span class="count-badge">${criticalUsers.length + highUsers.length}</span></div>
       <div class="risk-cards">
         ${[...criticalUsers, ...highUsers].map(s => renderRiskCard(s)).join('')}
       </div>
@@ -597,7 +597,7 @@ function renderDashboard(data) {
 
   const medSection = mediumUsers.length > 0 ? `
     <div id="risk-group-medium" class="risk-section">
-      <div class="section-heading" style="margin-top:4px">🟡 Medium-Risk Accounts <span class="count-badge">${mediumUsers.length}</span></div>
+      <div class="section-heading" style="margin-top:4px"><i class="bi bi-circle-fill" style="color:#f59e0b"></i> Medium-Risk Accounts <span class="count-badge">${mediumUsers.length}</span></div>
       <div class="risk-cards">
         ${mediumUsers.map(s => renderRiskCard(s, true)).join('')}
       </div>
@@ -605,21 +605,21 @@ function renderDashboard(data) {
 
   const lowSection = lowUsers.length > 0 ? `
     <div id="risk-group-low" class="risk-section">
-      <div class="section-heading" style="margin-top:4px">🟢 Low-Risk Accounts <span class="count-badge">${lowUsers.length}</span></div>
+      <div class="section-heading" style="margin-top:4px"><i class="bi bi-circle-fill" style="color:#10b981"></i> Low-Risk Accounts <span class="count-badge">${lowUsers.length}</span></div>
       <div class="risk-cards">
         ${lowUsers.map(s => renderRiskCard(s, true)).join('')}
       </div>
     </div>` : '';
 
   const watchSection = watching.length > 0 ? `
-    <div class="section-heading">⭐ Watch List <span class="count-badge">${watching.length}</span></div>
+    <div class="section-heading"><i class="bi bi-star-fill"></i> Watch List <span class="count-badge">${watching.length}</span></div>
     <div class="risk-cards">
       ${watching.map(s => renderRiskCard(s)).join('')}
     </div>` : '';
 
   const noRisk = summaries.length === 0 ? `
     <div class="empty" style="padding:48px 0">
-      ✅ No suspicious accounts detected in this workspace.
+      <i class="bi bi-check-circle-fill"></i> No suspicious accounts detected in this workspace.
     </div>` : '';
 
   const timelineSection = timeline.length > 0 ? renderAttackTimeline(timeline) : '';
@@ -658,19 +658,19 @@ function renderDashSideStats(events, summaries, homeCountry) {
       </div>
       <div class="dash-panel-body" style="display:flex;flex-direction:column;gap:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:12px;color:var(--text2)">⚠ Accounts at Risk</span>
+          <span style="font-size:12px;color:var(--text2)"><i class="bi bi-exclamation-triangle"></i> Accounts at Risk</span>
           <span style="font-size:18px;font-weight:700;color:${atRisk > 0 ? 'var(--danger)' : 'var(--ok)'}">${atRisk}</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:12px;color:var(--text2)">📊 Total Events</span>
+          <span style="font-size:12px;color:var(--text2)"><i class="bi bi-bar-chart-fill"></i> Total Events</span>
           <span style="font-size:18px;font-weight:700;color:var(--accent)">${totalEvents.toLocaleString()}</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:12px;color:var(--text2)">❌ Foreign Failed</span>
+          <span style="font-size:12px;color:var(--text2)"><i class="bi bi-x-circle-fill"></i> Foreign Failed</span>
           <span style="font-size:18px;font-weight:700;color:${foreignFail > 0 ? 'var(--warn)' : 'var(--ok)'}">${foreignFail.toLocaleString()}</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
-          <span style="font-size:12px;color:var(--text2)">🌍 Foreign Success</span>
+          <span style="font-size:12px;color:var(--text2)"><i class="bi bi-globe"></i> Foreign Success</span>
           <span style="font-size:18px;font-weight:700;color:${foreignSuccess > 0 ? 'var(--danger)' : 'var(--ok)'}">${foreignSuccess}</span>
         </div>
       </div>
@@ -701,7 +701,7 @@ function renderRiskCard(s, collapsed = false) {
   const attemptColor = s.foreignAttempts > 50 ? 'c-danger' : s.foreignAttempts > 10 ? 'c-warn' : 'c-accent';
 
   const notePreview = state.userNotes[s.user]
-    ? `<div class="rc-note-badge" title="${escHtml(state.userNotes[s.user])}">📝 ${escHtml(state.userNotes[s.user].slice(0, 60))}${state.userNotes[s.user].length > 60 ? '…' : ''}</div>`
+    ? `<div class="rc-note-badge" title="${escHtml(state.userNotes[s.user])}"><i class="bi bi-pencil"></i> ${escHtml(state.userNotes[s.user].slice(0, 60))}${state.userNotes[s.user].length > 60 ? '…' : ''}</div>`
     : '';
 
   const userHist = state.activeWorkspace ? getUserHistory(state.activeWorkspace.id, s.user) : null;
@@ -725,7 +725,7 @@ function renderRiskCard(s, collapsed = false) {
           </div>
           ${anomalyChips}
         </div>
-        <button class="rc-expand-btn${isPinned ? ' rc-pin-active' : ''}" onclick="event.stopPropagation();toggleWatchList('${escHtml(s.user)}')" title="${isPinned ? 'Unpin from Watch List' : 'Pin to Watch List'}" style="font-size:14px">${isPinned ? '⭐' : '☆'}</button>
+        <button class="rc-expand-btn${isPinned ? ' rc-pin-active' : ''}" onclick="event.stopPropagation();toggleWatchList('${escHtml(s.user)}')" title="${isPinned ? 'Unpin from Watch List' : 'Pin to Watch List'}">${isPinned ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>'}</button>
         <button class="rc-expand-btn" onclick="event.stopPropagation();openTimeline('${escHtml(s.user)}')" title="View full timeline" style="margin-left:4px">↗</button>
         <button class="rc-expand-btn" onclick="event.stopPropagation();exportUserIncident('${escHtml(s.user)}')" title="Export Incident Report" style="margin-left:4px;font-size:11px">PDF</button>
         <button class="rc-expand-btn" onclick="event.stopPropagation();toggleRiskCard('${cardId}')" style="margin-left:4px">▾</button>
@@ -771,7 +771,7 @@ function renderAttackTimeline(timeline) {
       <div class="atl-item">
         <span class="atl-time">${timeStr}</span>
         <span class="atl-user atl-user-link" title="${escHtml(e.user)}" onclick="openTimeline('${escHtml(e.user)}')">${escHtml(e.displayName)}</span>
-        <span class="atl-loc">📍 ${escHtml(loc)}</span>
+        <span class="atl-loc"><i class="bi bi-geo-alt-fill"></i> ${escHtml(loc)}</span>
         ${errLabel}
       </div>`;
   });
@@ -785,7 +785,7 @@ function renderAttackTimeline(timeline) {
   }
 
   const grouped = Object.entries(byDate).map(([date, rows]) => `
-    <div class="atl-separator">📅 ${date}</div>
+    <div class="atl-separator"><i class="bi bi-calendar"></i> ${date}</div>
     ${rows.join('')}
   `).join('');
 
@@ -803,26 +803,26 @@ function renderAttackTimeline(timeline) {
 
 /* ── Conditional Access Recommendations ──────────────────────────────────── */
 const CA_RECS = {
-  PASSWORD_SPRAY:            { priority:'HIGH',     icon:'💉', title:'Aktifkan Smart Lockout & Password Protection', desc:'Password spray terdeteksi. Smart Lockout mengunci akun setelah gagal berulang kali dari IP yang sama.', action:'Entra ID → Security → Authentication Methods → Password Protection', tip:'Set lockout threshold ≤5, lockout duration ≥60 detik. Aktifkan juga custom banned passwords.' },
-  BRUTE_FORCE:               { priority:'HIGH',     icon:'🔨', title:'Blokir Legacy Authentication Protocols', desc:'Brute force terdeteksi. Legacy auth (IMAP, POP3, SMTP AUTH) tidak mendukung MFA sehingga rentan.', action:'Entra ID → Security → Conditional Access → New Policy → Block legacy authentication', tip:'Target: Exchange ActiveSync + Other clients. Apply to All Users. Monitor 14 hari sebelum enforce.' },
-  MFA_EXHAUSTION:            { priority:'CRITICAL', icon:'📲', title:'Aktifkan MFA Number Matching + Additional Context', desc:'MFA Fatigue Attack terdeteksi. Attacker membombardir notifikasi push MFA sampai user approve by reflex.', action:'Entra ID → Security → Authentication Methods → Microsoft Authenticator → Configure', tip:'Aktifkan Number Matching DAN Additional Context (tampilkan lokasi + app). Disable simple push approval.' },
-  IMPOSSIBLE_TRAVEL:         { priority:'CRITICAL', icon:'✈️', title:'Terapkan Sign-in Risk Policy (Identity Protection)', desc:'Login dari lokasi yang tidak mungkin terdeteksi — indikasi credential compromise atau VPN abuse.', action:'Entra ID → Protection → Identity Protection → Sign-in risk policy', tip:'High risk → Require MFA atau Block. Medium risk → Require MFA. Butuh Entra ID P2 — pertimbangkan untuk akun kritis.' },
-  FOREIGN_LOGIN:             { priority:'HIGH',     icon:'🌍', title:'Buat Named Location & Country Block CA Policy', desc:'Login sukses dari negara asing terdeteksi. Batasi akses dari negara yang tidak dioperasikan klien.', action:'Entra ID → Security → Conditional Access → Named Locations → Country/Region', tip:'Buat allowlist negara yang sah. Block sign-in dari semua negara lain, atau require MFA untuk negara baru.' },
-  LEGACY_AUTH:               { priority:'HIGH',     icon:'🔌', title:'Blokir Legacy Authentication (Policy Dedicated)', desc:'Login via protokol legacy terdeteksi. Protocol ini bypass MFA dan merupakan vektor serangan utama.', action:'Entra ID → Security → Conditional Access → New Policy → Conditions → Client apps', tip:'Buat CA policy khusus: kondisi "Other clients" dan "Exchange ActiveSync" → Grant "Block access".' },
-  CA_GAP:                    { priority:'MEDIUM',   icon:'🕳️', title:'Audit Coverage Conditional Access Policies', desc:'Gap dalam coverage CA terdeteksi — ada user atau app yang tidak ter-cover policy apapun.', action:'Entra ID → Security → Conditional Access → Insights and Reporting', tip:'Gunakan CA "What If" tool untuk test coverage. Pastikan tidak ada user yang lolos semua policy.' },
-  TOKEN_REPLAY:              { priority:'CRITICAL', icon:'🎭', title:'Aktifkan Continuous Access Evaluation (CAE)', desc:'Token replay attack terdeteksi. Attacker menggunakan access token yang dicuri dari session lain.', action:'Entra ID → Security → Continuous Access Evaluation → Enable', tip:'CAE merevoke token secara real-time saat kondisi berubah. Aktifkan juga Token Protection di CA policy.' },
-  ENUMERATION_ATTACK:        { priority:'MEDIUM',   icon:'📋', title:'Sembunyikan User Existence & Aktifkan SSPR Lockout', desc:'User enumeration terdeteksi. Attacker sedang memetakan akun valid untuk serangan berikutnya.', action:'Entra ID → Security → Authentication Methods → Password Reset', tip:'Pastikan error message login tidak membedakan "user tidak ada" vs "password salah". Enable SSPR lockout.' },
-  CREDENTIAL_STUFFING:       { priority:'HIGH',     icon:'🔓', title:'Aktifkan User Risk Policy & Leaked Credential Detection', desc:'Credential stuffing terdeteksi — attacker menggunakan credential dari breach database pihak ketiga.', action:'Entra ID → Protection → Identity Protection → User risk policy', tip:'High user risk → Require password change. Aktifkan Password Hash Sync untuk leaked credential detection.' },
-  ADMIN_TOOL_ABUSE:          { priority:'CRITICAL', icon:'👑', title:'Terapkan Privileged Identity Management (PIM)', desc:'Admin tool abuse terdeteksi. Akses privileged tanpa oversight memudahkan lateral movement.', action:'Entra ID → Identity Governance → Privileged Identity Management → Roles', tip:'Terapkan just-in-time access dengan approval workflow + time limit untuk semua admin roles.' },
-  SERVICE_PRINCIPAL_ANOMALY: { priority:'HIGH',     icon:'🤖', title:'Audit Service Principal Permissions', desc:'Anomali activity dari Service Principal/App terdeteksi — bisa indikasi compromised app credential.', action:'Entra ID → App Registrations → [App] → API Permissions + Certificates & Secrets', tip:'Review permission scope. Rotate client secrets. Terapkan least-privilege principle per service principal.' },
-  TIME_OF_DAY_ANOMALY:       { priority:'MEDIUM',   icon:'🌙', title:'Terapkan Business Hours Access Policy', desc:'Login di jam tidak wajar terdeteksi secara konsisten — anomali dari baseline normal user.', action:'Entra ID → Security → Conditional Access → New Policy → Conditions → Time (preview)', tip:'Require MFA tambahan atau block akses diluar jam kerja untuk user atau group berisiko tinggi.' },
-  FIRST_SEEN_COUNTRY:        { priority:'MEDIUM',   icon:'🗺️', title:'Require MFA untuk Lokasi Baru (Named Locations)', desc:'Login dari negara yang belum pernah digunakan user sebelumnya terdeteksi.', action:'Entra ID → Security → Conditional Access → Named Locations', tip:'Buat policy: jika login dari lokasi di luar trusted countries → Require MFA. Log dan alert semua kasus.' },
-  CONCURRENT_SESSIONS:       { priority:'HIGH',     icon:'👥', title:'Konfigurasi Session Controls & Token Lifetime', desc:'Sesi concurrent mencurigakan terdeteksi — bisa indikasi token sharing atau session hijacking.', action:'Entra ID → Security → Conditional Access → Session controls → Sign-in frequency', tip:'Set sign-in frequency yang pendek untuk app sensitif. Disable persistent browser session untuk unmanaged devices.' },
-  OAUTH_CONSENT_PHISHING:    { priority:'CRITICAL', icon:'🎣', title:'Batasi User Consent untuk OAuth Applications', desc:'OAuth consent phishing terdeteksi — attacker membuat app berbahaya untuk mencuri token OAuth.', action:'Entra ID → Enterprise Applications → Consent and permissions → User consent settings', tip:'Set ke "Allow for verified publishers only" atau "Do not allow". Aktifkan admin consent workflow.' },
-  DISTRIBUTED_BRUTE_FORCE:   { priority:'HIGH',     icon:'🌐', title:'Aktifkan Risk-Based CA untuk Distributed Attack', desc:'Distributed brute force dari banyak IP terdeteksi — menghindari IP-based lockout tradisional.', action:'Entra ID → Protection → Identity Protection → Sign-in risk policy', tip:'IP-based lockout tidak efektif untuk distributed attack. Gunakan sign-in risk score untuk block/require MFA.' },
-  MFA_METHOD_DOWNGRADE:      { priority:'HIGH',     icon:'📉', title:'Require Phishing-Resistant MFA (Authentication Strength)', desc:'MFA method downgrade terdeteksi — attacker memaksa user ke metode MFA yang lebih mudah di-phish.', action:'Entra ID → Security → Authentication Methods → Authentication strengths', tip:'Buat custom Authentication Strength yang hanya izinkan FIDO2 Security Key atau Certificate-Based Auth.' },
-  RARE_APP_ACCESS:           { priority:'LOW',      icon:'📦', title:'Review App Permissions & Terapkan App-Based CA', desc:'Akses ke aplikasi yang jarang digunakan terdeteksi — perlu validasi apakah akses ini legitimate.', action:'Entra ID → Enterprise Applications → Usage & insights', tip:'Terapkan CA policy yang require MFA atau compliant device untuk apps sensitif atau jarang diakses.' },
-  DEVICE_FINGERPRINT_ANOMALY:{ priority:'MEDIUM',   icon:'💻', title:'Terapkan Device Compliance CA Policy', desc:'Login dari device baru atau tidak dikenal secara konsisten terdeteksi.', action:'Entra ID → Security → Conditional Access → Require compliant device', tip:'Require Intune device compliance atau Hybrid AD Join untuk akses ke corporate resources.' },
+  PASSWORD_SPRAY:            { priority:'HIGH',     icon:'<i class="bi bi-shield-lock-fill"></i>', title:'Aktifkan Smart Lockout & Password Protection', desc:'Password spray terdeteksi. Smart Lockout mengunci akun setelah gagal berulang kali dari IP yang sama.', action:'Entra ID → Security → Authentication Methods → Password Protection', tip:'Set lockout threshold ≤5, lockout duration ≥60 detik. Aktifkan juga custom banned passwords.' },
+  BRUTE_FORCE:               { priority:'HIGH',     icon:'<i class="bi bi-hammer"></i>', title:'Blokir Legacy Authentication Protocols', desc:'Brute force terdeteksi. Legacy auth (IMAP, POP3, SMTP AUTH) tidak mendukung MFA sehingga rentan.', action:'Entra ID → Security → Conditional Access → New Policy → Block legacy authentication', tip:'Target: Exchange ActiveSync + Other clients. Apply to All Users. Monitor 14 hari sebelum enforce.' },
+  MFA_EXHAUSTION:            { priority:'CRITICAL', icon:'<i class="bi bi-phone-fill"></i>', title:'Aktifkan MFA Number Matching + Additional Context', desc:'MFA Fatigue Attack terdeteksi. Attacker membombardir notifikasi push MFA sampai user approve by reflex.', action:'Entra ID → Security → Authentication Methods → Microsoft Authenticator → Configure', tip:'Aktifkan Number Matching DAN Additional Context (tampilkan lokasi + app). Disable simple push approval.' },
+  IMPOSSIBLE_TRAVEL:         { priority:'CRITICAL', icon:'<i class="bi bi-airplane-fill"></i>', title:'Terapkan Sign-in Risk Policy (Identity Protection)', desc:'Login dari lokasi yang tidak mungkin terdeteksi — indikasi credential compromise atau VPN abuse.', action:'Entra ID → Protection → Identity Protection → Sign-in risk policy', tip:'High risk → Require MFA atau Block. Medium risk → Require MFA. Butuh Entra ID P2 — pertimbangkan untuk akun kritis.' },
+  FOREIGN_LOGIN:             { priority:'HIGH',     icon:'<i class="bi bi-globe"></i>', title:'Buat Named Location & Country Block CA Policy', desc:'Login sukses dari negara asing terdeteksi. Batasi akses dari negara yang tidak dioperasikan klien.', action:'Entra ID → Security → Conditional Access → Named Locations → Country/Region', tip:'Buat allowlist negara yang sah. Block sign-in dari semua negara lain, atau require MFA untuk negara baru.' },
+  LEGACY_AUTH:               { priority:'HIGH',     icon:'<i class="bi bi-plug-fill"></i>', title:'Blokir Legacy Authentication (Policy Dedicated)', desc:'Login via protokol legacy terdeteksi. Protocol ini bypass MFA dan merupakan vektor serangan utama.', action:'Entra ID → Security → Conditional Access → New Policy → Conditions → Client apps', tip:'Buat CA policy khusus: kondisi "Other clients" dan "Exchange ActiveSync" → Grant "Block access".' },
+  CA_GAP:                    { priority:'MEDIUM',   icon:'<i class="bi bi-shield-slash"></i>', title:'Audit Coverage Conditional Access Policies', desc:'Gap dalam coverage CA terdeteksi — ada user atau app yang tidak ter-cover policy apapun.', action:'Entra ID → Security → Conditional Access → Insights and Reporting', tip:'Gunakan CA "What If" tool untuk test coverage. Pastikan tidak ada user yang lolos semua policy.' },
+  TOKEN_REPLAY:              { priority:'CRITICAL', icon:'<i class="bi bi-masks-theater"></i>', title:'Aktifkan Continuous Access Evaluation (CAE)', desc:'Token replay attack terdeteksi. Attacker menggunakan access token yang dicuri dari session lain.', action:'Entra ID → Security → Continuous Access Evaluation → Enable', tip:'CAE merevoke token secara real-time saat kondisi berubah. Aktifkan juga Token Protection di CA policy.' },
+  ENUMERATION_ATTACK:        { priority:'MEDIUM',   icon:'<i class="bi bi-list-check"></i>', title:'Sembunyikan User Existence & Aktifkan SSPR Lockout', desc:'User enumeration terdeteksi. Attacker sedang memetakan akun valid untuk serangan berikutnya.', action:'Entra ID → Security → Authentication Methods → Password Reset', tip:'Pastikan error message login tidak membedakan "user tidak ada" vs "password salah". Enable SSPR lockout.' },
+  CREDENTIAL_STUFFING:       { priority:'HIGH',     icon:'<i class="bi bi-unlock-fill"></i>', title:'Aktifkan User Risk Policy & Leaked Credential Detection', desc:'Credential stuffing terdeteksi — attacker menggunakan credential dari breach database pihak ketiga.', action:'Entra ID → Protection → Identity Protection → User risk policy', tip:'High user risk → Require password change. Aktifkan Password Hash Sync untuk leaked credential detection.' },
+  ADMIN_TOOL_ABUSE:          { priority:'CRITICAL', icon:'<i class="bi bi-award-fill"></i>', title:'Terapkan Privileged Identity Management (PIM)', desc:'Admin tool abuse terdeteksi. Akses privileged tanpa oversight memudahkan lateral movement.', action:'Entra ID → Identity Governance → Privileged Identity Management → Roles', tip:'Terapkan just-in-time access dengan approval workflow + time limit untuk semua admin roles.' },
+  SERVICE_PRINCIPAL_ANOMALY: { priority:'HIGH',     icon:'<i class="bi bi-robot"></i>', title:'Audit Service Principal Permissions', desc:'Anomali activity dari Service Principal/App terdeteksi — bisa indikasi compromised app credential.', action:'Entra ID → App Registrations → [App] → API Permissions + Certificates & Secrets', tip:'Review permission scope. Rotate client secrets. Terapkan least-privilege principle per service principal.' },
+  TIME_OF_DAY_ANOMALY:       { priority:'MEDIUM',   icon:'<i class="bi bi-moon-fill"></i>', title:'Terapkan Business Hours Access Policy', desc:'Login di jam tidak wajar terdeteksi secara konsisten — anomali dari baseline normal user.', action:'Entra ID → Security → Conditional Access → New Policy → Conditions → Time (preview)', tip:'Require MFA tambahan atau block akses diluar jam kerja untuk user atau group berisiko tinggi.' },
+  FIRST_SEEN_COUNTRY:        { priority:'MEDIUM',   icon:'<i class="bi bi-map"></i>', title:'Require MFA untuk Lokasi Baru (Named Locations)', desc:'Login dari negara yang belum pernah digunakan user sebelumnya terdeteksi.', action:'Entra ID → Security → Conditional Access → Named Locations', tip:'Buat policy: jika login dari lokasi di luar trusted countries → Require MFA. Log dan alert semua kasus.' },
+  CONCURRENT_SESSIONS:       { priority:'HIGH',     icon:'<i class="bi bi-people-fill"></i>', title:'Konfigurasi Session Controls & Token Lifetime', desc:'Sesi concurrent mencurigakan terdeteksi — bisa indikasi token sharing atau session hijacking.', action:'Entra ID → Security → Conditional Access → Session controls → Sign-in frequency', tip:'Set sign-in frequency yang pendek untuk app sensitif. Disable persistent browser session untuk unmanaged devices.' },
+  OAUTH_CONSENT_PHISHING:    { priority:'CRITICAL', icon:'<i class="bi bi-bug-fill"></i>', title:'Batasi User Consent untuk OAuth Applications', desc:'OAuth consent phishing terdeteksi — attacker membuat app berbahaya untuk mencuri token OAuth.', action:'Entra ID → Enterprise Applications → Consent and permissions → User consent settings', tip:'Set ke "Allow for verified publishers only" atau "Do not allow". Aktifkan admin consent workflow.' },
+  DISTRIBUTED_BRUTE_FORCE:   { priority:'HIGH',     icon:'<i class="bi bi-globe2"></i>', title:'Aktifkan Risk-Based CA untuk Distributed Attack', desc:'Distributed brute force dari banyak IP terdeteksi — menghindari IP-based lockout tradisional.', action:'Entra ID → Protection → Identity Protection → Sign-in risk policy', tip:'IP-based lockout tidak efektif untuk distributed attack. Gunakan sign-in risk score untuk block/require MFA.' },
+  MFA_METHOD_DOWNGRADE:      { priority:'HIGH',     icon:'<i class="bi bi-graph-down-arrow"></i>', title:'Require Phishing-Resistant MFA (Authentication Strength)', desc:'MFA method downgrade terdeteksi — attacker memaksa user ke metode MFA yang lebih mudah di-phish.', action:'Entra ID → Security → Authentication Methods → Authentication strengths', tip:'Buat custom Authentication Strength yang hanya izinkan FIDO2 Security Key atau Certificate-Based Auth.' },
+  RARE_APP_ACCESS:           { priority:'LOW',      icon:'<i class="bi bi-box-seam"></i>', title:'Review App Permissions & Terapkan App-Based CA', desc:'Akses ke aplikasi yang jarang digunakan terdeteksi — perlu validasi apakah akses ini legitimate.', action:'Entra ID → Enterprise Applications → Usage & insights', tip:'Terapkan CA policy yang require MFA atau compliant device untuk apps sensitif atau jarang diakses.' },
+  DEVICE_FINGERPRINT_ANOMALY:{ priority:'MEDIUM',   icon:'<i class="bi bi-laptop"></i>', title:'Terapkan Device Compliance CA Policy', desc:'Login dari device baru atau tidak dikenal secara konsisten terdeteksi.', action:'Entra ID → Security → Conditional Access → Require compliant device', tip:'Require Intune device compliance atau Hybrid AD Join untuk akses ke corporate resources.' },
 };
 
 function renderRemediationTab(data) {
@@ -844,7 +844,7 @@ function renderRemediationTab(data) {
   activeRecs.forEach(([,r]) => { if (counts[r.priority] !== undefined) counts[r.priority]++; });
 
   if (activeRecs.length === 0) {
-    return `<div class="empty" style="padding:60px 0">✅ Tidak ada rekomendasi aktif — tidak ada deteksi yang memerlukan CA policy change.</div>`;
+    return `<div class="empty" style="padding:60px 0"><i class="bi bi-check-circle-fill"></i> Tidak ada rekomendasi aktif — tidak ada deteksi yang memerlukan CA policy change.</div>`;
   }
 
   return `
@@ -876,10 +876,10 @@ function renderRemediationTab(data) {
               <span class="rem-badge" style="background:${c.bg};border:1px solid ${c.border};color:${c.text}">${rec.priority}</span>
             </div>
             <div class="rem-card-path">
-              <span style="opacity:.5;font-size:11px">📍</span>
+              <span style="opacity:.5;font-size:11px"><i class="bi bi-geo-alt-fill"></i></span>
               <span class="rem-path-text">${escHtml(rec.action)}</span>
             </div>
-            <div class="rem-card-tip">💡 ${escHtml(rec.tip)}</div>
+            <div class="rem-card-tip"><i class="bi bi-lightbulb-fill"></i> ${escHtml(rec.tip)}</div>
           </div>`;
       }).join('')}
     </div>`;
@@ -888,18 +888,18 @@ function renderRemediationTab(data) {
 /* ── Right nav ────────────────────────────────────────────────────────────── */
 const RNAV_TABS = [
   { id: 'dashboard',  icon: '◈',  label: 'Dashboard' },
-  { id: 'accounts',   icon: '👤', label: 'Accounts', children: [
+  { id: 'accounts',   icon: '<i class="bi bi-person-fill"></i>', label: 'Accounts', children: [
     { id: 'accounts-high',   label: 'High Risk',   dot: '#ef4444' },
     { id: 'accounts-medium', label: 'Medium Risk',  dot: '#f59e0b' },
     { id: 'accounts-low',    label: 'Low Risk',     dot: '#10b981' },
   ]},
-  { id: 'detections',   icon: '🔍', label: 'Detections' },
-  { id: 'remediation', icon: '🛡️', label: 'CA Remediation' },
+  { id: 'detections',   icon: '<i class="bi bi-search"></i>', label: 'Detections' },
+  { id: 'remediation', icon: '<i class="bi bi-shield-check"></i>', label: 'CA Remediation' },
   { id: 'events',      icon: '≡',  label: 'Events' },
   { id: 'map',        icon: '◉',  label: 'Map' },
   { id: 'charts',     icon: '▦',  label: 'Charts' },
   { id: 'killchain',  icon: '⊕',  label: 'Kill Chain' },
-  { id: 'velocity',   icon: '⚡', label: 'Velocity' },
+  { id: 'velocity',   icon: '<i class="bi bi-lightning-charge-fill"></i>', label: 'Velocity' },
   { id: 'graph',      icon: '⬡',  label: 'Attack Graph' },
   { id: 'swimlane',   icon: '⊟',  label: 'Swimlane' },
   { id: 'sankey',     icon: '⊧',  label: 'Sankey' },
@@ -1073,10 +1073,10 @@ function buildDetectionsSection(detections) {
   const bulkBar = state.bulkSelected.size > 0 ? `
     <div class="bulk-action-bar">
       <span class="bulk-count">${state.bulkSelected.size} selected</span>
-      <button class="bulk-btn bulk-tp"  onclick="bulkTriage('TP')">✓ Mark TP</button>
-      <button class="bulk-btn bulk-fp"  onclick="bulkTriage('FP')">✗ Mark FP</button>
+      <button class="bulk-btn bulk-tp"  onclick="bulkTriage('TP')"><i class="bi bi-check-lg"></i> Mark TP</button>
+      <button class="bulk-btn bulk-fp"  onclick="bulkTriage('FP')"><i class="bi bi-x-lg"></i> Mark FP</button>
       <button class="bulk-btn bulk-inv" onclick="bulkTriage('INV')">? Investigating</button>
-      <button class="bulk-btn bulk-clr" onclick="clearBulkSelection()">✕ Clear</button>
+      <button class="bulk-btn bulk-clr" onclick="clearBulkSelection()"><i class="bi bi-x"></i> Clear</button>
     </div>` : '';
 
   const pagBar = totalPages > 1 ? `
@@ -1101,10 +1101,10 @@ function buildDetectionsSection(detections) {
 
   return `<div id="detections-section">
     <div class="section-heading" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      🔍 Detections
+      <i class="bi bi-search"></i> Detections
       <span class="count-badge">${detections.length}</span>
       ${nonFP.length !== detections.length ? `<span style="font-size:11px;color:var(--text3)">(${nonFP.length} active)</span>` : ''}
-      ${detections.length > 0 ? `<button class="btn-ioc-export" onclick="exportIOC()" title="Export IPs, users & countries as CSV for SIEM / firewall">⬇ Export IOC</button>` : ''}
+      ${detections.length > 0 ? `<button class="btn-ioc-export" onclick="exportIOC()" title="Export IPs, users & countries as CSV for SIEM / firewall"><i class="bi bi-download"></i> Export IOC</button>` : ''}
     </div>
     ${detections.length >= 2 ? renderCampaigns(detections) : ''}
     ${filterBar}
@@ -1190,12 +1190,12 @@ function renderCampaigns(detections) {
     return `
       <div class="campaign-card" style="background:${sevBg};border:1px solid ${sevBorder}">
         <div class="campaign-header">
-          <span class="campaign-num" style="color:${sevColor}">⚡ Campaign #${idx+1}</span>
+          <span class="campaign-num" style="color:${sevColor}"><i class="bi bi-lightning-charge-fill"></i> Campaign #${idx+1}</span>
           <div class="campaign-meta">
-            <span class="campaign-stat">🔍 ${group.length} detections</span>
-            ${users.size ? `<span class="campaign-stat">👤 ${users.size} user${users.size>1?'s':''}</span>` : ''}
-            ${ips.length  ? `<span class="campaign-stat">📡 ${ips.length} IP${ips.length>1?'s':''}: ${ips.slice(0,2).map(escHtml).join(', ')}${ips.length>2?'…':''}</span>` : ''}
-            ${countries.length ? `<span class="campaign-stat">📍 ${countries.slice(0,3).join(', ')}${countries.length>3?'…':''}</span>` : ''}
+            <span class="campaign-stat"><i class="bi bi-search"></i> ${group.length} detections</span>
+            ${users.size ? `<span class="campaign-stat"><i class="bi bi-person-fill"></i> ${users.size} user${users.size>1?'s':''}</span>` : ''}
+            ${ips.length  ? `<span class="campaign-stat"><i class="bi bi-broadcast"></i> ${ips.length} IP${ips.length>1?'s':''}: ${ips.slice(0,2).map(escHtml).join(', ')}${ips.length>2?'…':''}</span>` : ''}
+            ${countries.length ? `<span class="campaign-stat"><i class="bi bi-geo-alt-fill"></i> ${countries.slice(0,3).join(', ')}${countries.length>3?'…':''}</span>` : ''}
           </div>
         </div>
         <div class="campaign-types">
@@ -1207,7 +1207,7 @@ function renderCampaigns(detections) {
 
   return `
     <div style="margin-bottom:14px">
-      <div class="section-heading" style="margin-bottom:8px">⚡ Attack Campaigns <span class="count-badge">${campaigns.length}</span> <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:4px">— correlated detections dari IP / user yang sama</span></div>
+      <div class="section-heading" style="margin-bottom:8px"><i class="bi bi-lightning-charge-fill"></i> Attack Campaigns <span class="count-badge">${campaigns.length}</span> <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:4px">— correlated detections dari IP / user yang sama</span></div>
       ${cards}
     </div>
     <div style="height:1px;background:var(--border);margin-bottom:16px"></div>`;
@@ -1265,7 +1265,7 @@ function exportIOC() {
     download: fname,
   });
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  toast(`✅ Exported ${rows.length - 1} IOC indicators → ${fname}`, 'ok');
+  toast(`<i class="bi bi-check-circle-fill"></i> Exported ${rows.length - 1} IOC indicators → ${fname}`, 'ok');
 }
 
 function matchesKillChainFilter(det) {
@@ -1276,7 +1276,7 @@ function matchesKillChainFilter(det) {
   const users = new Set();
   if (det.user) users.add(det.user);
   if (det.affectedUsers) det.affectedUsers.forEach(u => users.add(u));
-  if (det.ip && !det.user) users.add(`📡 ${det.ip}`);
+  if (det.ip && !det.user) users.add(`<i class="bi bi-broadcast"></i> ${det.ip}`);
   return tacticMatch && users.has(f.user);
 }
 
@@ -1307,17 +1307,17 @@ function buildDetectionExplainer(det) {
 
   const evid = [];
   if (det.windowStart && det.windowEnd)
-    evid.push({ i: '🕐', l: 'Window', v: `${formatDate(det.windowStart)} → ${formatDate(det.windowEnd)}` });
+    evid.push({ i: '<i class="bi bi-clock"></i>', l: 'Window', v: `${formatDate(det.windowStart)} → ${formatDate(det.windowEnd)}` });
   else if (det.time)
-    evid.push({ i: '🕐', l: 'Time', v: formatDate(det.time) });
-  if (det.ip)        evid.push({ i: '📡', l: 'IP', v: det.ip });
-  if (det.country)   evid.push({ i: '📍', l: 'Country', v: det.country });
+    evid.push({ i: '<i class="bi bi-clock"></i>', l: 'Time', v: formatDate(det.time) });
+  if (det.ip)        evid.push({ i: '<i class="bi bi-broadcast"></i>', l: 'IP', v: det.ip });
+  if (det.country)   evid.push({ i: '<i class="bi bi-geo-alt-fill"></i>', l: 'Country', v: det.country });
   const uc = det.userCount || det.affectedUsers?.length;
-  if (uc)            evid.push({ i: '👥', l: 'Users', v: uc });
-  if (det.attemptCount) evid.push({ i: '🔁', l: 'Attempts', v: det.attemptCount });
-  if (det.promptCount)  evid.push({ i: '📲', l: 'MFA prompts', v: det.promptCount });
+  if (uc)            evid.push({ i: '<i class="bi bi-people-fill"></i>', l: 'Users', v: uc });
+  if (det.attemptCount) evid.push({ i: '<i class="bi bi-arrow-repeat"></i>', l: 'Attempts', v: det.attemptCount });
+  if (det.promptCount)  evid.push({ i: '<i class="bi bi-phone-fill"></i>', l: 'MFA prompts', v: det.promptCount });
   const ipc = (det.uniqueIPs || []).length || det.ipCount;
-  if (ipc)           evid.push({ i: '🌐', l: 'Unique IPs', v: ipc });
+  if (ipc)           evid.push({ i: '<i class="bi bi-globe2"></i>', l: 'Unique IPs', v: ipc });
 
   const evidHtml = evid.length ? `<div class="explainer-evidence">${
     evid.map(e => `<div class="ev-chip"><span class="ev-icon">${e.i}</span><span class="ev-label">${escHtml(String(e.l))}</span><span class="ev-val">${escHtml(String(e.v))}</span></div>`).join('')
@@ -1331,7 +1331,7 @@ function buildDetectionExplainer(det) {
   </div>` : '';
 
   return `<div class="det-explainer">
-    <div class="explainer-title">⚡ Why did this fire?</div>
+    <div class="explainer-title"><i class="bi bi-lightning-charge-fill"></i> Why did this fire?</div>
     <div class="explainer-text">${escHtml(text)}</div>
     ${evidHtml}${mitreHtml}
   </div>
@@ -1362,11 +1362,11 @@ function renderDetectionCard(det) {
 
   const iocChips = (() => {
     const chips = [];
-    if (det.ip) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.ip)}',this)" title="Copy IP">📡 ${escHtml(det.ip)}</span>`);
-    if (det.user) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.user)}',this)" title="Copy user">👤 ${escHtml(det.user)}</span>`);
-    if (det.country && !det.user) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.country)}',this)" title="Copy country">📍 ${escHtml(det.country)}</span>`);
+    if (det.ip) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.ip)}',this)" title="Copy IP"><i class="bi bi-broadcast"></i> ${escHtml(det.ip)}</span>`);
+    if (det.user) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.user)}',this)" title="Copy user"><i class="bi bi-person-fill"></i> ${escHtml(det.user)}</span>`);
+    if (det.country && !det.user) chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(det.country)}',this)" title="Copy country"><i class="bi bi-geo-alt-fill"></i> ${escHtml(det.country)}</span>`);
     const extraIPs = (det.uniqueIPs || det.ips || []).filter(ip => ip !== det.ip).slice(0, 3);
-    extraIPs.forEach(ip => chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(ip)}',this)" title="Copy IP">📡 ${escHtml(ip)}</span>`));
+    extraIPs.forEach(ip => chips.push(`<span class="ioc-chip" onclick="event.stopPropagation();copyIOC('${escHtml(ip)}',this)" title="Copy IP"><i class="bi bi-broadcast"></i> ${escHtml(ip)}</span>`));
     return chips.length ? `<div class="det-ioc-row">${chips.join('')}</div>` : '';
   })();
 
@@ -1390,7 +1390,7 @@ function renderDetectionCard(det) {
       ${iocChips}
       <div class="det-comment-row" onclick="event.stopPropagation()">
         ${existingComment
-          ? `<div class="det-comment-preview" onclick="toggleDetComment('${commentId}')">💬 <em>${escHtml(existingComment.slice(0,90))}${existingComment.length > 90 ? '…' : ''}</em></div>`
+          ? `<div class="det-comment-preview" onclick="toggleDetComment('${commentId}')"><i class="bi bi-chat-fill"></i> <em>${escHtml(existingComment.slice(0,90))}${existingComment.length > 90 ? '…' : ''}</em></div>`
           : `<button class="det-comment-add" onclick="toggleDetComment('${commentId}')">+ Add comment</button>`}
         <div class="det-comment-input" id="${commentId}">
           <textarea class="det-comment-textarea" id="dct-${id}" placeholder="Investigation notes, evidence, action taken…" rows="2">${escHtml(existingComment)}</textarea>
@@ -1453,9 +1453,9 @@ function renderEventsTable(allEvents) {
       <tr${rowClass} onclick="openTimeline('${escHtml(e.userPrincipal)}')" style="cursor:pointer">
         <td>${formatDate(e.createdAt)}</td>
         <td title="${escHtml(e.userPrincipal)}">${escHtml(e.displayName || e.userPrincipal)}</td>
-        <td>${e.success ? '<span class="status-ok">✓</span>' : '<span class="status-fail">✗</span>'}</td>
+        <td>${e.success ? '<span class="status-ok"><i class="bi bi-check-lg"></i></span>' : '<span class="status-fail"><i class="bi bi-x-lg"></i></span>'}</td>
         <td>${renderIPClickable(e.ipAddress)}</td>
-        <td>${isForeign ? '⚠ ' : ''}${escHtml(e.country)}${e.city ? ` / ${escHtml(e.city)}` : ''}</td>
+        <td>${isForeign ? '<i class="bi bi-exclamation-triangle"></i> ' : ''}${escHtml(e.country)}${e.city ? ` / ${escHtml(e.city)}` : ''}</td>
         <td><span class="${appTypeClass}">${escHtml(e.appType || 'Other')}</span></td>
         <td title="${escHtml(e.appName)}">${escHtml(e.appName).slice(0, 28)}</td>
         <td title="${escHtml(e.failureReason)}">${e.errorCode !== null && e.errorCode !== 0 ? e.errorCode : ''}</td>
@@ -1487,7 +1487,7 @@ function renderEventsTable(allEvents) {
         <input type="date" value="${escHtml(state.dateFrom)}" onchange="filterDateFrom(this.value)" />
         <span>To</span>
         <input type="date" value="${escHtml(state.dateTo)}" onchange="filterDateTo(this.value)" />
-        ${state.dateFrom || state.dateTo ? `<button class="btn-secondary" style="font-size:11px;padding:3px 8px" onclick="clearDateFilter()">✕ Clear</button>` : ''}
+        ${state.dateFrom || state.dateTo ? `<button class="btn-secondary" style="font-size:11px;padding:3px 8px" onclick="clearDateFilter()"><i class="bi bi-x"></i> Clear</button>` : ''}
       </div>
     </div>
     <div class="table-wrap">
@@ -1595,7 +1595,7 @@ function initMap() {
       fillOpacity,
       weight: 1.5,
     }).addTo(map).bindPopup(`
-      <b>${country}</b>${isHome ? ' 🏠 Home' : ' ⚠ Foreign'}<br>
+      <b>${country}</b>${isHome ? ' <i class="bi bi-house-fill"></i> Home' : ' <i class="bi bi-exclamation-triangle"></i> Foreign'}<br>
       Total: ${stats.total}<br>
       Successful: ${stats.success}<br>
       Failed: ${stats.total - stats.success}
@@ -1794,7 +1794,7 @@ function initKillChain() {
     const users = new Set();
     if (det.user) users.add(det.user);
     if (det.affectedUsers) det.affectedUsers.slice(0, 8).forEach(u => users.add(u));
-    if (users.size === 0 && det.ip) users.add(`📡 ${det.ip}`);
+    if (users.size === 0 && det.ip) users.add(`[IP] ${det.ip}`);
 
     for (const user of users) {
       if (!matrix[user]) matrix[user] = {};
@@ -1844,7 +1844,7 @@ function initKillChain() {
   const filterBar = f ? `
     <div class="kc-filter-bar">
       Highlighting: <strong>${escHtml(f.user)}</strong> — <em>${escHtml(f.tactic)}</em>
-      <button class="btn-secondary" style="font-size:11px;padding:2px 10px;margin-left:12px" onclick="clearKillChainFilter()">✕ Clear</button>
+      <button class="btn-secondary" style="font-size:11px;padding:2px 10px;margin-left:12px" onclick="clearKillChainFilter()"><i class="bi bi-x"></i> Clear</button>
     </div>` : '';
 
   container.innerHTML = `
@@ -2136,7 +2136,7 @@ function renderHealthScore(events, detections) {
   return `
     <div class="dash-panel health-panel">
       <div class="dash-panel-header">
-        <span class="dash-panel-title">🛡 Tenant Health</span>
+        <span class="dash-panel-title"><i class="bi bi-shield-check"></i> Tenant Health</span>
         <span style="font-size:14px;font-weight:800;color:${scoreColor}">${total}/100</span>
       </div>
       <div class="dash-panel-body">
@@ -2208,8 +2208,8 @@ function openTimeline(userPrincipal, page = 1) {
         <div class="tl-content">
           <div class="tl-time">${formatDate(e.createdAt)}</div>
           <div class="tl-row">
-            <span class="${e.success ? 'tl-status-ok' : 'tl-status-fail'}">${e.success ? '✓ Success' : '✗ Failed'}</span>
-            ${e.country ? `<span>📍 ${escHtml(e.country)}${e.city ? ' / ' + escHtml(e.city) : ''}</span>` : ''}
+            <span class="${e.success ? 'tl-status-ok' : 'tl-status-fail'}">${e.success ? '<i class="bi bi-check-lg"></i> Success' : '<i class="bi bi-x-lg"></i> Failed'}</span>
+            ${e.country ? `<span><i class="bi bi-geo-alt-fill"></i> ${escHtml(e.country)}${e.city ? ' / ' + escHtml(e.city) : ''}</span>` : ''}
             ${e.ipAddress ? `<span style="color:var(--text2)">${renderIPClickable(e.ipAddress)}</span>` : ''}
             ${flags.join('')}
           </div>
@@ -2254,8 +2254,8 @@ function openTimeline(userPrincipal, page = 1) {
           <div class="tl-user">${escHtml(userPrincipal)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <button class="btn-secondary" style="font-size:11px;padding:3px 10px" onclick="exportSessionReplay('${escHtml(userPrincipal)}')">📋 Export Log</button>
-          <button class="timeline-close" onclick="closeTimeline()">✕</button>
+          <button class="btn-secondary" style="font-size:11px;padding:3px 10px" onclick="exportSessionReplay('${escHtml(userPrincipal)}')"><i class="bi bi-clipboard"></i> Export Log</button>
+          <button class="timeline-close" onclick="closeTimeline()"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
       <div class="timeline-body">
@@ -2270,11 +2270,11 @@ function openTimeline(userPrincipal, page = 1) {
       </div>
       ${paginationHtml}
       <div class="tl-notes-section">
-        <div class="tl-notes-label">📝 Investigation Notes</div>
+        <div class="tl-notes-label"><i class="bi bi-journal-text"></i> Investigation Notes</div>
         <textarea id="tl-note-input" class="tl-note-textarea" placeholder="Write investigation notes for this user…" rows="3">${escHtml(state.userNotes[userPrincipal] || '')}</textarea>
         <div class="tl-notes-footer">
           <button class="btn-secondary" style="font-size:12px;padding:4px 12px" onclick="saveUserNote('${escHtml(userPrincipal)}')">Save Note</button>
-          ${state.userNotes[userPrincipal] ? `<span class="tl-note-saved">✓ Note saved</span>` : ''}
+          ${state.userNotes[userPrincipal] ? `<span class="tl-note-saved"><i class="bi bi-check-lg"></i> Note saved</span>` : ''}
         </div>
       </div>
     </div>`;
@@ -2300,7 +2300,7 @@ async function saveUserNote(userPrincipal) {
     if (footer) {
       let saved = footer.querySelector('.tl-note-saved');
       if (!saved) { saved = document.createElement('span'); saved.className = 'tl-note-saved'; footer.appendChild(saved); }
-      saved.textContent = note.trim() ? '✓ Note saved' : '';
+      saved.innerHTML = note.trim() ? '<i class="bi bi-check-lg"></i> Note saved' : '';
     }
     toast('Note saved');
   } catch(e) { toast('Failed to save note', 'err'); }
@@ -2362,7 +2362,7 @@ async function toggleWatchList(user) {
     // Re-render dashboard to reorder cards
     const dashEl = document.getElementById('tab-dashboard');
     if (dashEl) dashEl.innerHTML = renderDashboard(state.analysisData);
-    toast(state.watchList.has(user) ? '⭐ Added to Watch List' : '☆ Removed from Watch List');
+    toast(state.watchList.has(user) ? '<i class="bi bi-star-fill"></i> Added to Watch List' : '<i class="bi bi-star"></i> Removed from Watch List');
   } catch(e) { toast('Failed to update Watch List', 'err'); }
 }
 
@@ -2620,7 +2620,7 @@ function renderCorrelationPanel() {
   div.innerHTML = `
     <div class="corr-panel">
       <div class="corr-panel-header">
-        🔗 Cross-workspace IP Correlation
+        <i class="bi bi-link-45deg"></i> Cross-workspace IP Correlation
         <span style="color:var(--danger)">${corr.correlations.length} workspace(s) share attacking IPs</span>
       </div>
       ${corr.correlations.map(c => `
@@ -3107,7 +3107,7 @@ function exportExecutiveSummary() {
 function setBaselineNow() {
   if (!state.analysisData || !state.activeWorkspace) return;
   saveBaseline(state.activeWorkspace.id, extractBaselineMetrics(state.analysisData));
-  toast('📊 Baseline updated — future runs will compare against this snapshot', 'ok');
+  toast('<i class="bi bi-bar-chart-fill"></i> Baseline updated — future runs will compare against this snapshot', 'ok');
 }
 
 function renderDriftBanner(data) {
@@ -3151,7 +3151,7 @@ function renderDriftBanner(data) {
   }).join('');
 
   return `<div class="drift-banner">
-    <span class="drift-title">📊 Baseline Drift</span>
+    <span class="drift-title"><i class="bi bi-bar-chart-fill"></i> Baseline Drift</span>
     <span style="font-size:10px;color:var(--text3);margin-right:8px">vs ${escHtml(blDate)}</span>
     ${chips}
     <button class="drift-update-btn" onclick="setBaselineNow()" title="Update baseline to current run">Update</button>
@@ -3348,7 +3348,7 @@ function exportWeeklyDigest() {
   a.download = `EIDSA_Digest_${ws.name.replace(/\W+/g,'_')}_${new Date().toISOString().slice(0,10)}.html`;
   a.click();
   URL.revokeObjectURL(url);
-  toast('📨 Weekly Digest exported', 'ok');
+  toast('<i class="bi bi-envelope"></i> Weekly Digest exported', 'ok');
 }
 
 /* ── Sparkline helper ─────────────────────────────────────────────────────── */
@@ -4032,13 +4032,13 @@ function showKQLPanel(detJson) {
           <div class="kql-title">${det.type.replace(/_/g, ' ')}</div>
           <div class="kql-subtitle">${mitre ? `ATT&CK ${mitre.id} · ${mitre.tactic}` : 'KQL Query'}</div>
         </div>
-        <button class="kql-close" onclick="closeKQLPanel()">✕</button>
+        <button class="kql-close" onclick="closeKQLPanel()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="kql-context">${escHtml(det.message)}</div>
       <div class="kql-body">
         <div class="kql-toolbar">
           <span class="kql-label">Microsoft Sentinel · Log Analytics</span>
-          <button class="kql-copy-btn" id="kql-copy-btn" onclick="copyKQL()">📋 Copy KQL</button>
+          <button class="kql-copy-btn" id="kql-copy-btn" onclick="copyKQL()"><i class="bi bi-clipboard"></i> Copy KQL</button>
         </div>
         <pre class="kql-code" id="kql-code-block">${escHtml(kql)}</pre>
       </div>
@@ -4058,7 +4058,7 @@ function copyKQL() {
   const code = document.getElementById('kql-code-block')?.textContent || '';
   navigator.clipboard.writeText(code).then(() => {
     const btn = document.getElementById('kql-copy-btn');
-    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '📋 Copy KQL'; }, 2000); }
+    if (btn) { btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!'; setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy KQL'; }, 2000); }
   });
 }
 
@@ -4353,8 +4353,8 @@ function openIOCSearch() {
   overlay.innerHTML = `
     <div id="ioc-panel">
       <div class="ioc-header">
-        <span>🔍 IOC Search</span>
-        <button onclick="closeIOCSearch()">✕</button>
+        <span><i class="bi bi-search"></i> IOC Search</span>
+        <button onclick="closeIOCSearch()"><i class="bi bi-x-lg"></i></button>
       </div>
       <input id="ioc-input" type="text" placeholder="Search IP, username, country, error code…"
         oninput="renderIOCResults(this.value)" autocomplete="off" spellcheck="false" />
@@ -4438,7 +4438,7 @@ function renderIOCResults(query) {
     html += Object.entries(ctryEvents).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([loc, count]) => {
       const ctry = loc.split(' / ')[0];
       return `<div class="ioc-result" onclick="filterEventsByCountry('${escHtml(ctry)}')">
-        <span class="ioc-result-main">📍 ${escHtml(loc)}</span>
+        <span class="ioc-result-main"><i class="bi bi-geo-alt-fill"></i> ${escHtml(loc)}</span>
         <span class="ioc-result-meta">${count} events</span>
       </div>`;
     }).join('');
@@ -4569,8 +4569,8 @@ function initAttackGraph() {
   const ipBadge = ip => {
     const info = ipEnrichment[ip];
     if (!info) return '';
-    if (info.proxy)   return ' ⚑';
-    if (info.hosting) return ' ⬡';
+    if (info.proxy)   return ' [P]';
+    if (info.hosting) return ' [H]';
     return '';
   };
 
@@ -4816,9 +4816,9 @@ function openIPPivot(ip) {
     return `
     <div class="ipp-event-row">
       <span class="ipp-ev-time">${formatDate(e.createdAt)}</span>
-      <span class="${e.success ? 'tl-status-ok' : 'tl-status-fail'}">${e.success ? '✓' : '✗'}</span>
+      <span class="${e.success ? 'tl-status-ok' : 'tl-status-fail'}">${e.success ? '<i class="bi bi-check-lg"></i>' : '<i class="bi bi-x-lg"></i>'}</span>
       <span class="ipp-ev-user" onclick="closeIPPivot();openTimeline('${escHtml(e.userPrincipal)}')">${escHtml(e.displayName || e.userPrincipal.split('@')[0])}</span>
-      ${e.country ? `<span class="ipp-ev-loc">${isForeign ? '⚠ ' : ''}${escHtml(e.country)}${e.city ? '/' + escHtml(e.city) : ''}</span>` : ''}
+      ${e.country ? `<span class="ipp-ev-loc">${isForeign ? '<i class="bi bi-exclamation-triangle"></i> ' : ''}${escHtml(e.country)}${e.city ? '/' + escHtml(e.city) : ''}</span>` : ''}
       <span class="ipp-ev-app">${escHtml(e.appType || '')}</span>
     </div>`;
   }).join('');
@@ -4838,11 +4838,11 @@ function openIPPivot(ip) {
         <div>
           <div class="ipp-title" style="display:flex;align-items:center;gap:8px">
             ${escHtml(ip)}
-            <span class="ioc-chip" style="font-size:10px;padding:1px 7px" onclick="copyIOC('${escHtml(ip)}',this)" title="Copy IP">📋 Copy</span>
+            <span class="ioc-chip" style="font-size:10px;padding:1px 7px" onclick="copyIOC('${escHtml(ip)}',this)" title="Copy IP"><i class="bi bi-clipboard"></i> Copy</span>
           </div>
           <div class="ipp-subtitle">IP Pivot · ${ipEvents.length} events · ${users.length} users targeted</div>
         </div>
-        <button class="timeline-close" onclick="closeIPPivot()">✕</button>
+        <button class="timeline-close" onclick="closeIPPivot()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="ipp-body">
         ${enrichRows || histRow ? `<div class="ipp-section"><div class="ipp-section-title">Enrichment</div>${enrichRows}${histRow}</div>` : ''}
@@ -4877,7 +4877,7 @@ function toggleTheme() {
   const isLight = document.body.classList.toggle('theme-light');
   localStorage.setItem('eidsa_theme', isLight ? 'light' : 'dark');
   const btn = document.getElementById('btn-theme-toggle');
-  if (btn) btn.textContent = isLight ? '🌙' : '☀';
+  if (btn) btn.innerHTML = isLight ? '<i class="bi bi-moon-fill"></i>' : '<i class="bi bi-sun-fill"></i>';
   // Reinit map with correct tiles if open
   if (state.leafletMap) {
     state.leafletMap.eachLayer(l => { if (l._url) state.leafletMap.removeLayer(l); });
@@ -4921,11 +4921,11 @@ function closeShortcutPanel() {
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 function copyIOC(text, el) {
   navigator.clipboard.writeText(text).then(() => {
-    const orig = el.textContent;
-    el.textContent = '✓ Copied';
+    const orig = el.innerHTML;
+    el.innerHTML = '<i class="bi bi-check-lg"></i> Copied';
     el.style.color = '#22c55e';
     el.style.borderColor = '#22c55e60';
-    setTimeout(() => { el.textContent = orig; el.style.color = ''; el.style.borderColor = ''; }, 1600);
+    setTimeout(() => { el.innerHTML = orig; el.style.color = ''; el.style.borderColor = ''; }, 1600);
   }).catch(() => toast('Copy failed', 'err'));
 }
 
@@ -5066,17 +5066,17 @@ function renderDeltaPanel(data) {
 
   const chips = [];
   if (detDelta !== 0) chips.push(`<span class="delta-chip ${detDelta > 0 ? 'delta-up' : 'delta-down'}">${detDelta > 0 ? '↑' : '↓'} ${Math.abs(detDelta)} detections</span>`);
-  newUsers.forEach(u     => chips.push(`<span class="delta-chip delta-new" title="${escHtml(u)}">🆕 ${escHtml(u.split('@')[0])}</span>`));
-  resolvedUsers.forEach(u=> chips.push(`<span class="delta-chip delta-ok" title="${escHtml(u)}">✓ ${escHtml(u.split('@')[0])}</span>`));
-  newTypes.forEach(t     => chips.push(`<span class="delta-chip delta-new">🆕 ${t.replace(/_/g,' ')}</span>`));
-  goneTypes.forEach(t    => chips.push(`<span class="delta-chip delta-ok">✓ ${t.replace(/_/g,' ')}</span>`));
-  newIPs.slice(0, 5).forEach(ip => chips.push(`<span class="delta-chip delta-new ip-link" onclick="event.stopPropagation();openIPPivot('${escHtml(ip)}')" style="cursor:pointer">🆕 ${escHtml(ip)}</span>`));
+  newUsers.forEach(u     => chips.push(`<span class="delta-chip delta-new" title="${escHtml(u)}"><i class="bi bi-plus-circle"></i> ${escHtml(u.split('@')[0])}</span>`));
+  resolvedUsers.forEach(u=> chips.push(`<span class="delta-chip delta-ok" title="${escHtml(u)}"><i class="bi bi-check-lg"></i> ${escHtml(u.split('@')[0])}</span>`));
+  newTypes.forEach(t     => chips.push(`<span class="delta-chip delta-new"><i class="bi bi-plus-circle"></i> ${t.replace(/_/g,' ')}</span>`));
+  goneTypes.forEach(t    => chips.push(`<span class="delta-chip delta-ok"><i class="bi bi-check-lg"></i> ${t.replace(/_/g,' ')}</span>`));
+  newIPs.slice(0, 5).forEach(ip => chips.push(`<span class="delta-chip delta-new ip-link" onclick="event.stopPropagation();openIPPivot('${escHtml(ip)}')" style="cursor:pointer"><i class="bi bi-plus-circle"></i> ${escHtml(ip)}</span>`));
   if (newIPs.length > 5) chips.push(`<span class="delta-chip delta-neutral">+${newIPs.length - 5} new IPs</span>`);
-  newCountries.forEach(c => chips.push(`<span class="delta-chip delta-new">🌍 ${escHtml(c)}</span>`));
-  goneCountries.forEach(c=> chips.push(`<span class="delta-chip delta-ok">✓ ${escHtml(c)}</span>`));
+  newCountries.forEach(c => chips.push(`<span class="delta-chip delta-new"><i class="bi bi-globe"></i> ${escHtml(c)}</span>`));
+  goneCountries.forEach(c=> chips.push(`<span class="delta-chip delta-ok"><i class="bi bi-check-lg"></i> ${escHtml(c)}</span>`));
 
   return `<div class="delta-panel">
-    <span class="delta-title">🔄 vs Run <span style="opacity:0.6;font-weight:400">${prevAge}</span></span>
+    <span class="delta-title"><i class="bi bi-arrow-clockwise"></i> vs Run <span style="opacity:0.6;font-weight:400">${prevAge}</span></span>
     <div class="delta-chips">${chips.join('')}</div>
   </div>`;
 }
@@ -5158,7 +5158,7 @@ function renderUserAnomalyChips(userPrincipal) {
   const anomalies = detectUserAnomalies(userPrincipal);
   if (!anomalies.length) return '';
   return `<div class="user-anomalies">${anomalies.map(a =>
-    `<span class="anomaly-chip anomaly-${a.risk}" title="Behavior deviation from baseline">⚠ ${escHtml(a.label)}</span>`
+    `<span class="anomaly-chip anomaly-${a.risk}" title="Behavior deviation from baseline"><i class="bi bi-exclamation-triangle"></i> ${escHtml(a.label)}</span>`
   ).join('')}</div>`;
 }
 
@@ -5187,6 +5187,6 @@ loadWorkspaces();
   if (saved === 'light') {
     document.body.classList.add('theme-light');
     const btn = document.getElementById('btn-theme-toggle');
-    if (btn) btn.textContent = '🌙';
+    if (btn) btn.innerHTML = '<i class="bi bi-moon-fill"></i>';
   }
 })();

@@ -72,6 +72,7 @@ const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/bootstrap-icons', express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')));
 
 // Multer: store files in uploads/<workspaceId>/
 const storage = multer.diskStorage({
