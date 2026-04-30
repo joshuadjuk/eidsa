@@ -81,7 +81,7 @@ async function api(method, path, body) {
 function toast(msg, type = 'ok') {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.textContent = msg;
+  el.innerHTML = msg;
   document.body.appendChild(el);
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
 }
