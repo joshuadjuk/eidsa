@@ -18,7 +18,7 @@
   --accent2:    #8764b8;
   --text:       #dde6f4;
   --text2:      #8ba0bb;
-  --text3:      #3d5470;
+  --text3:      #617898;
   --danger:     #d94040;
   --danger-dim: #a82f2f;
   --warn:       #d4882a;
@@ -695,7 +695,8 @@ body {
 .events-filter input { flex: 1; min-width: 200px; }
 .events-filter input::placeholder { color: var(--text3); }
 .events-filter input:focus, .events-filter select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(15,108,189,0.12); }
-.events-filter select { color: var(--text2); cursor: pointer; }
+.events-filter select { color: var(--text); cursor: pointer; }
+select option { background: var(--bg2); color: var(--text); }
 
 /* ── Table ────────────────────────────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
@@ -704,7 +705,7 @@ table { width: 100%; border-collapse: collapse; font-size: 12px; }
 
 thead th {
   background: var(--bg3);
-  color: var(--text3);
+  color: var(--text2);
   font-weight: 700;
   text-align: left;
   padding: 8px 11px;
@@ -1432,7 +1433,7 @@ td { padding: 7px 11px; white-space: nowrap; }
 .risk-badge.rb-high     { background: rgba(212,136,42,0.13); color: var(--warn);   border: 1px solid rgba(212,136,42,0.25); }
 .risk-badge.rb-medium   { background: rgba(135,100,184,0.13); color: #b09dd4;      border: 1px solid rgba(135,100,184,0.25); }
 
-.rc-threat { font-size: 11px; color: var(--text3); font-weight: 500; }
+.rc-threat { font-size: 11px; color: var(--text2); font-weight: 500; }
 
 .risk-score-badge {
   font-size: 13px;
@@ -1936,8 +1937,8 @@ details > summary::-webkit-details-marker { color: var(--text3); }
 }
 .campaign-type-tag {
   background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--text3);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text2);
   font-size: 10.5px;
   font-weight: 600;
   padding: 2px 8px;
@@ -2059,10 +2060,10 @@ details > summary::-webkit-details-marker { color: var(--text3); }
 }
 .bulk-count { font-size: 12px; font-weight: 700; color: #5fb3f8; margin-right: 3px; }
 .bulk-btn { padding: 3px 11px; border-radius: var(--radius-sm); font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid; transition: background 0.12s; }
-.bulk-tp  { background: rgba(22,163,74,0.11);   border-color: #16a34a50; color: #16a34a; }
-.bulk-fp  { background: rgba(100,116,139,0.11);  border-color: #64748b50; color: #64748b; }
-.bulk-inv { background: rgba(37,99,235,0.11);    border-color: #2563eb50; color: #2563eb; }
-.bulk-clr { background: rgba(220,38,38,0.09);    border-color: #dc262650; color: #dc2626; }
+.bulk-tp  { background: rgba(74,222,128,0.1);    border-color: rgba(74,222,128,0.35);  color: #4ade80; }
+.bulk-fp  { background: rgba(148,163,184,0.1);   border-color: rgba(148,163,184,0.35); color: #94a3b8; }
+.bulk-inv { background: rgba(96,165,250,0.1);    border-color: rgba(96,165,250,0.35);  color: #60a5fa; }
+.bulk-clr { background: rgba(248,113,113,0.1);   border-color: rgba(248,113,113,0.35); color: #f87171; }
 .bulk-btn:hover { filter: brightness(1.2); }
 .det-checkbox { display: flex; align-items: center; margin-right: 3px; }
 .det-checkbox input[type="checkbox"] { width: 13px; height: 13px; cursor: pointer; accent-color: var(--accent); }
