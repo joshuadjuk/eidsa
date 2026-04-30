@@ -1,4 +1,31 @@
 
+/* ── IndexedDB events cache ─────────────────────────────────────────────────
+   Stores full sorted events arrays keyed by "wsId:filesSig".
+   Survives page refresh; cleared automatically when files change (new sig).  */
+const idb = (() => {
+  let _db = null;
+  function open() {
+    return new Promise((res, rej) => {
+      if (_db) return res(_db);
+      const req = indexedDB.open('eidsa_events', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('ev');
+      req.onsuccess  = e => { _db = e.target.result; res(_db); };
+      req.onerror    = e => rej(e.target.error);
+    });
+  }
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('ev', mode);
+    const r = fn(t.objectStore('ev'));
+    r.onsuccess = () => res(r.result);
+    r.onerror   = () => res(null);
+  })).catch(() => null);
+  return {
+    get: key  => tx('readonly',  s => s.get(key)),
+    set: (key, val) => tx('readwrite', s => s.put(val, key)),
+    del: key  => tx('readwrite', s => s.delete(key)),
+  };
+})();
+
 /* ── State ────────────────────────────────────────────────────────────────── */
 const state = {
   workspaces: [],
@@ -30,6 +57,7 @@ const state = {
   detectionComments: {},
   bulkSelected: new Set(),
   rnavOpenGroups: new Set(['accounts']),
+  eventsLoading: null,  // { loaded, total } while bgLoadEvents is running, null when idle
 };
 
 /* ── API helpers ──────────────────────────────────────────────────────────── */
@@ -72,12 +100,18 @@ function renderSidebar() {
     return;
   }
   for (const ws of state.workspaces) {
+    const isActive = state.activeWorkspace?.id === ws.id;
     const div = document.createElement('div');
-    div.className = 'ws-item' + (state.activeWorkspace?.id === ws.id ? ' active' : '');
+    div.className = 'ws-item' + (isActive ? ' active' : '');
     const initials = ws.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const prog = state.eventsLoading;
+    const loadBar = isActive && prog
+      ? `<div class="ws-load-bar"><div class="ws-load-bar-fill" style="width:${Math.round(prog.loaded/prog.total*100)}%"></div></div>`
+      : '';
     div.innerHTML = `
       <div class="ws-item-icon">${initials}</div>
-      <div class="ws-item-name" title="${escHtml(ws.name)}">${escHtml(ws.name)}</div>`;
+      <div class="ws-item-name" title="${escHtml(ws.name)}">${escHtml(ws.name)}</div>
+      ${loadBar}`;
     div.onclick = () => selectWorkspace(ws.id);
     list.appendChild(div);
   }
@@ -97,6 +131,7 @@ async function selectWorkspace(id) {
   state.watchList = new Set(ws.watchList || []);
   state.detectionComments = ws.detectionComments || {};
   state.bulkSelected = new Set();
+  state.eventsLoading = null;
   state.activeTab = 'dashboard';
   if (state.leafletMap) { state.leafletMap.remove(); state.leafletMap = null; }
   destroyCharts();
@@ -2500,8 +2535,28 @@ async function deleteWorkspace() {
 
 /* ── Background event loader ─────────────────────────────────────────────── */
 async function bgLoadEvents(wsId, total) {
+  const sig = state.analysisData?.filesSig;
+  const idbKey = sig ? `${wsId}:${sig}` : null;
+
+  // Try IndexedDB first — if we already fetched these exact events, load instantly
+  if (idbKey) {
+    const cached = await idb.get(idbKey);
+    if (cached?.length > (state.analysisData?.events?.length || 0)) {
+      if (state.activeWorkspace?.id !== wsId || !state.analysisData) return;
+      state.analysisData.events = cached;
+      state.eventsLoading = null;
+      updateSidebarProgress();
+      if (state.activeTab === 'events') rerenderTable();
+      return;
+    }
+  }
+
+  // Fetch from server in batches
   const BATCH = 5000;
   let offset = (state.analysisData?.events || []).length;
+  state.eventsLoading = { loaded: offset, total };
+  updateSidebarProgress();
+
   while (offset < total) {
     if (state.activeWorkspace?.id !== wsId || !state.analysisData) return;
     try {
@@ -2510,13 +2565,39 @@ async function bgLoadEvents(wsId, total) {
       if (state.activeWorkspace?.id !== wsId || !state.analysisData) return;
       state.analysisData.events = [...(state.analysisData.events || []), ...res.events];
       offset += res.events.length;
-      updateEventsProgress(state.analysisData.events.length, total);
+      state.eventsLoading = { loaded: offset, total };
+      updateSidebarProgress();
       if (state.activeTab === 'events') rerenderTable();
     } catch (e) {
       break;
     }
   }
-  updateEventsProgress(null, null); // clear progress
+
+  // Save to IndexedDB so future loads are instant (no server round-trip needed)
+  if (idbKey && state.analysisData?.events?.length > 0) {
+    idb.set(idbKey, state.analysisData.events).catch(() => {});
+  }
+
+  state.eventsLoading = null;
+  updateSidebarProgress();
+  updateEventsProgress(null, null);
+}
+
+function updateSidebarProgress() {
+  const item = document.querySelector('.ws-item.active');
+  if (!item) return;
+  let bar = item.querySelector('.ws-load-bar');
+  if (!state.eventsLoading) {
+    if (bar) bar.remove();
+    return;
+  }
+  const pct = Math.round((state.eventsLoading.loaded / state.eventsLoading.total) * 100);
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.className = 'ws-load-bar';
+    item.appendChild(bar);
+  }
+  bar.innerHTML = `<div class="ws-load-bar-fill" style="width:${pct}%"></div>`;
 }
 
 function updateEventsProgress(loaded, total) {

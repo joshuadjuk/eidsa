@@ -222,6 +222,23 @@ body {
   color: var(--text2);
 }
 
+/* Loading progress bar inside the workspace sidebar item */
+.ws-load-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(91,141,239,0.2);
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+}
+.ws-load-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 6px rgba(91,141,239,0.6);
+}
+
 .sidebar-footer {
   padding: 8px 6px;
   border-top: 1px solid var(--border);

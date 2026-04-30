@@ -371,7 +371,7 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
     const hit = eventsCache[req.params.id];
     if (hit && hit.filesSig === filesSig && hit.result) {
       console.log(`[analyze] ${req.params.id}: cache hit — serving instantly`);
-      return res.json({ ...hit.result, events: hit.events.slice(0, EVENTS_FIRST_BATCH) });
+      return res.json({ ...hit.result, filesSig, events: hit.events.slice(0, EVENTS_FIRST_BATCH) });
     }
 
     const { runDetections } = require('./lib/detections');
@@ -467,6 +467,7 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
     const analysisResult = {
       total: totalEvents,
       eventsLimited,
+      filesSig,           // client uses this as IndexedDB cache key
       detections,
       homeCountry,
       geoSummary,
