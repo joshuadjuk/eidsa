@@ -2127,3 +2127,15 @@ details > summary::-webkit-details-marker { color: var(--text3); }
 .anomaly-chip { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 500; border: 1px solid transparent; }
 .anomaly-high { background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.3);  color: #f87171; }
 .anomaly-med  { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--warn); }
+
+/* ── Detection Filter Bar & Pagination ────────────────────────────────────── */
+.det-filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.det-filter-input { flex: 1; min-width: 160px; padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px; outline: none; }
+.det-filter-input:focus { border-color: var(--accent); }
+.det-sev-select { padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px; outline: none; cursor: pointer; }
+.det-sev-select:focus { border-color: var(--accent); }
+.det-pagination { display: flex; align-items: center; gap: 6px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+.det-pg-btn { padding: 5px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.det-pg-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+.det-pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.det-pg-info { font-size: 12px; color: var(--text2); padding: 0 6px; }

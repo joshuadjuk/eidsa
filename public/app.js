@@ -22,6 +22,10 @@ const state = {
   triages: {},
   userNotes: {},
   killChainFilter: null,
+  detectionsPage: 1,
+  detectionsPageSize: 30,
+  detectionsFilter: '',
+  detectionsSevFilter: 'all',
   watchList: new Set(),
   detectionComments: {},
   bulkSelected: new Set(),
@@ -321,6 +325,9 @@ async function runAnalysis() {
     mergeRunHistory(wsId, state.analysisData);
     updateUserProfiles(wsId, state.analysisData.events || []);
     state.eventsPage = 1;
+    state.detectionsPage = 1;
+    state.detectionsFilter = '';
+    state.detectionsSevFilter = 'all';
     state.activeTab = 'dashboard';
     renderAnalysis();
     if (state.analysisData.eventsLimited) {
@@ -992,13 +999,30 @@ function rerenderDetections() {
 }
 
 function buildDetectionsSection(detections) {
-  const visible = detections.filter(d => state.triages[getTriageKey(d)] !== 'FP');
-  const fp      = detections.filter(d => state.triages[getTriageKey(d)] === 'FP');
-  const fpHtml  = fp.length > 0 ? `
+  const nonFP = detections.filter(d => state.triages[getTriageKey(d)] !== 'FP');
+  const fp    = detections.filter(d => state.triages[getTriageKey(d)] === 'FP');
+
+  // Filter bar
+  const q = (state.detectionsFilter || '').toLowerCase();
+  const sf = state.detectionsSevFilter || 'all';
+  let visible = nonFP;
+  if (sf !== 'all') visible = visible.filter(d => d.severity === sf);
+  if (q) visible = visible.filter(d =>
+    (d.type + ' ' + (d.user || '') + ' ' + (d.ip || '') + ' ' + (d.message || '')).toLowerCase().includes(q)
+  );
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(visible.length / state.detectionsPageSize));
+  const page = Math.min(state.detectionsPage, totalPages);
+  const start = (page - 1) * state.detectionsPageSize;
+  const pageItems = visible.slice(start, start + state.detectionsPageSize);
+
+  const fpHtml = fp.length > 0 ? `
     <div class="fp-suppressed" onclick="this.classList.toggle('open');this.querySelector('.fp-toggle-arrow').textContent=this.classList.contains('open')?'▾':'▸'">
       <span><span class="fp-toggle-arrow">▸</span> ${fp.length} False Positive${fp.length > 1 ? 's' : ''} suppressed — click to show</span>
       <div class="fp-suppressed-list">${fp.map(renderDetectionCard).join('')}</div>
     </div>` : '';
+
   const bulkBar = state.bulkSelected.size > 0 ? `
     <div class="bulk-action-bar">
       <span class="bulk-count">${state.bulkSelected.size} selected</span>
@@ -1007,19 +1031,64 @@ function buildDetectionsSection(detections) {
       <button class="bulk-btn bulk-inv" onclick="bulkTriage('INV')">? Investigating</button>
       <button class="bulk-btn bulk-clr" onclick="clearBulkSelection()">✕ Clear</button>
     </div>` : '';
+
+  const pagBar = totalPages > 1 ? `
+    <div class="det-pagination">
+      <button class="det-pg-btn" onclick="changeDetPage(-1)" ${page <= 1 ? 'disabled' : ''}>◀</button>
+      <span class="det-pg-info">Page ${page} / ${totalPages} <span style="color:var(--text3)"> · ${visible.length} results</span></span>
+      <button class="det-pg-btn" onclick="changeDetPage(1)" ${page >= totalPages ? 'disabled' : ''}>▶</button>
+    </div>` : '';
+
+  const filterBar = `
+    <div class="det-filter-bar">
+      <input class="det-filter-input" type="text" placeholder="Filter by type, user, IP, message…"
+        value="${escHtml(state.detectionsFilter || '')}"
+        oninput="filterDetections(this.value)" />
+      <select class="det-sev-select" onchange="filterDetectionsSev(this.value)">
+        <option value="all"   ${sf==='all'    ?'selected':''}>All severities</option>
+        <option value="high"  ${sf==='high'   ?'selected':''}>High</option>
+        <option value="medium"${sf==='medium' ?'selected':''}>Medium</option>
+        <option value="low"   ${sf==='low'    ?'selected':''}>Low</option>
+      </select>
+    </div>`;
+
   return `<div id="detections-section">
-    <div class="section-heading" style="display:flex;align-items:center;gap:8px">
+    <div class="section-heading" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       🔍 Detections
       <span class="count-badge">${detections.length}</span>
+      ${nonFP.length !== detections.length ? `<span style="font-size:11px;color:var(--text3)">(${nonFP.length} active)</span>` : ''}
       ${detections.length > 0 ? `<button class="btn-ioc-export" onclick="exportIOC()" title="Export IPs, users & countries as CSV for SIEM / firewall">⬇ Export IOC</button>` : ''}
     </div>
     ${detections.length >= 2 ? renderCampaigns(detections) : ''}
+    ${filterBar}
     ${bulkBar}
-    ${visible.length === 0 && fp.length === 0
+    ${pagBar}
+    ${visible.length === 0 && fp.length === 0 && !q && sf === 'all'
       ? '<div class="empty">No detections triggered — all clear.</div>'
-      : visible.map(renderDetectionCard).join('')}
+      : visible.length === 0
+        ? `<div class="empty">No detections match the current filter.</div>`
+        : pageItems.map(renderDetectionCard).join('')}
+    ${pagBar}
     ${fpHtml}
   </div>`;
+}
+
+function filterDetections(val) {
+  state.detectionsFilter = val;
+  state.detectionsPage = 1;
+  rerenderDetections();
+}
+
+function filterDetectionsSev(val) {
+  state.detectionsSevFilter = val;
+  state.detectionsPage = 1;
+  rerenderDetections();
+}
+
+function changeDetPage(delta) {
+  state.detectionsPage += delta;
+  rerenderDetections();
+  document.getElementById('detections-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ── Attack Campaign Grouping ────────────────────────────────────────────── */
