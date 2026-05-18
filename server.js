@@ -465,10 +465,28 @@ app.get('/api/workspaces/:id/analyze', async (req, res) => {
       console.warn(`[analyze] ${req.params.id}: ${totalEvents} events — sending first ${EVENTS_FIRST_BATCH}, rest via /events`);
     }
 
+    const home = homeCountry.toUpperCase();
+    const compromisedSet = new Set();
+    for (const d of detections) {
+      if (d.user) compromisedSet.add(d.user);
+      if (d.affectedUsers) d.affectedUsers.forEach(u => compromisedSet.add(u));
+    }
+    const stats = {
+      total:            totalEvents,
+      successful:       normalized.filter(e => e.success).length,
+      failed:           normalized.filter(e => !e.success).length,
+      uniqueUsers:      new Set(normalized.map(e => e.userPrincipal).filter(Boolean)).size,
+      uniqueCountries:  new Set(normalized.map(e => e.country).filter(Boolean)).size,
+      foreignLogins:    normalized.filter(e => e.success && e.country && e.country.toUpperCase() !== home).length,
+      compromisedUsers: compromisedSet.size,
+      highFindings:     detections.filter(d => d.severity === 'high').length,
+    };
+
     const analysisResult = {
       total: totalEvents,
       eventsLimited,
       filesSig,           // client uses this as IndexedDB cache key
+      stats,
       detections,
       homeCountry,
       geoSummary,

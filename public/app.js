@@ -504,26 +504,17 @@ function renderAnalysis() {
   const events = data.events || [];
   const detections = data.detections || [];
   const homeCountry = data.homeCountry || "ID";
+  const s = data.stats || {};
 
-  const failures = events.filter((e) => !e.success).length;
-  const successes = events.filter((e) => e.success).length;
-  const uniqueUsers = new Set(events.map((e) => e.userPrincipal)).size;
-  const uniqueCountries = new Set(events.map((e) => e.country).filter(Boolean))
-    .size;
-  const highFindings = detections.filter((d) => d.severity === "high").length;
-
-  // Foreign logins count (successful, not home country)
-  const foreignLogins = events.filter(
-    (e) => e.success && e.country && e.country.toUpperCase() !== homeCountry,
-  ).length;
-
-  // Compromised accounts = users that appear in any detection
-  const compromisedUsers = new Set();
-  for (const d of detections) {
-    if (d.user) compromisedUsers.add(d.user);
-    if (d.affectedUsers)
-      d.affectedUsers.forEach((u) => compromisedUsers.add(u));
-  }
+  // Use server-computed stats (full dataset) — fall back to client-computed from partial events
+  const totalEvCount   = s.total            ?? data.total ?? events.length;
+  const successes      = s.successful       ?? events.filter((e) => e.success).length;
+  const failures       = s.failed           ?? events.filter((e) => !e.success).length;
+  const uniqueUsers    = s.uniqueUsers      ?? new Set(events.map((e) => e.userPrincipal)).size;
+  const uniqueCountries= s.uniqueCountries  ?? new Set(events.map((e) => e.country).filter(Boolean)).size;
+  const foreignLogins  = s.foreignLogins    ?? events.filter((e) => e.success && e.country && e.country.toUpperCase() !== homeCountry).length;
+  const compromisedUsers = { size: s.compromisedUsers ?? (() => { const cs = new Set(); for (const d of detections) { if (d.user) cs.add(d.user); if (d.affectedUsers) d.affectedUsers.forEach(u => cs.add(u)); } return cs.size; })() };
+  const highFindings   = s.highFindings     ?? detections.filter((d) => d.severity === "high").length;
 
   // Parse warnings banner (truncated files)
   const warnings = (data.parseWarnings || []).filter((w) => w.truncated);
@@ -563,7 +554,7 @@ function renderAnalysis() {
           <div class="stat-card info">
             <div class="stat-icon"><i class="bi bi-bar-chart-fill"></i></div>
             <div class="stat-label">Total Events</div>
-            <div class="stat-value">${events.length.toLocaleString()}</div>
+            <div class="stat-value">${totalEvCount.toLocaleString()}</div>
           </div>
           <div class="stat-card ok">
             <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
@@ -604,15 +595,9 @@ function renderAnalysis() {
         <!-- User risk cards + timeline -->
         ${renderDashboard(data)}
       </div>
-      <div id="tab-detections" class="tab-panel ${state.activeTab === "detections" ? "active" : ""}">
-        ${buildDetectionsSection(detections)}
-      </div>
-      <div id="tab-remediation" class="tab-panel ${state.activeTab === "remediation" ? "active" : ""}">
-        ${renderRemediationTab(data)}
-      </div>
-      <div id="tab-events" class="tab-panel ${state.activeTab === "events" ? "active" : ""}">
-        ${renderEventsTable(events)}
-      </div>
+      <div id="tab-detections" class="tab-panel ${state.activeTab === "detections" ? "active" : ""}" data-lazy="1"></div>
+      <div id="tab-remediation" class="tab-panel ${state.activeTab === "remediation" ? "active" : ""}" data-lazy="1"></div>
+      <div id="tab-events" class="tab-panel ${state.activeTab === "events" ? "active" : ""}" data-lazy="1"></div>
       <div id="tab-map" class="tab-panel ${state.activeTab === "map" ? "active" : ""}">
         <div id="map-container"></div>
       </div>
@@ -671,6 +656,48 @@ function renderAnalysis() {
   setTimeout(() => initAllRadarCharts(), 80);
 }
 
+function loadMoreRiskCards(level, currentCount) {
+  const data = state.analysisData;
+  if (!data) return;
+  const summaries = data.userSummaries || [];
+  const wl = state.watchList;
+  const nonWatching = summaries.filter(s => !wl.has(s.user));
+  const BATCH = 15;
+  let list;
+  if (level === 'high') {
+    list = [...nonWatching.filter(s => s.riskLevel === 'CRITICAL'), ...nonWatching.filter(s => s.riskLevel === 'HIGH')];
+  } else if (level === 'medium') {
+    list = nonWatching.filter(s => s.riskLevel === 'MEDIUM');
+  } else {
+    list = nonWatching.filter(s => s.riskLevel === 'LOW');
+  }
+  const container = document.getElementById(`risk-cards-${level}`);
+  if (!container) return;
+  const next = list.slice(currentCount, currentCount + BATCH);
+  const frag = document.createElement('div');
+  frag.innerHTML = next.map(s => renderRiskCard(s, level !== 'high')).join('');
+  // Remove old "load more" button from container's parent if exists
+  const btn = container.nextElementSibling;
+  if (btn && btn.classList.contains('btn-load-more')) btn.remove();
+  while (frag.firstChild) container.appendChild(frag.firstChild);
+  const newLoaded = currentCount + next.length;
+  if (newLoaded < list.length) {
+    const newBtn = document.createElement('button');
+    newBtn.className = 'btn-load-more';
+    newBtn.textContent = `Show ${list.length - newLoaded} more`;
+    newBtn.onclick = () => loadMoreRiskCards(level, newLoaded);
+    container.parentNode.insertBefore(newBtn, container.nextSibling);
+  }
+}
+
+function toggleLowRisk(btn) {
+  const container = document.getElementById('risk-cards-low');
+  if (!container) return;
+  const isHidden = container.style.display === 'none';
+  container.style.display = isHidden ? '' : 'none';
+  btn.textContent = isHidden ? 'Hide' : 'Show';
+}
+
 /* ── Dashboard ────────────────────────────────────────────────────────────── */
 function renderDashboard(data) {
   const summaries = data.userSummaries || [];
@@ -718,14 +745,18 @@ function renderDashboard(data) {
     })
     .join("");
 
+  const CARD_BATCH = 15;
+  const critHighList = [...criticalUsers, ...highUsers];
+
   const critSection =
-    criticalUsers.length + highUsers.length > 0
+    critHighList.length > 0
       ? `
     <div id="risk-group-high" class="risk-section">
-      <div class="section-heading"><i class="bi bi-circle-fill" style="color:#ef4444"></i> High-Risk Accounts <span class="count-badge">${criticalUsers.length + highUsers.length}</span></div>
-      <div class="risk-cards">
-        ${[...criticalUsers, ...highUsers].map((s) => renderRiskCard(s)).join("")}
+      <div class="section-heading"><i class="bi bi-circle-fill" style="color:#ef4444"></i> High-Risk Accounts <span class="count-badge">${critHighList.length}</span></div>
+      <div class="risk-cards" id="risk-cards-high">
+        ${critHighList.slice(0, CARD_BATCH).map((s) => renderRiskCard(s)).join("")}
       </div>
+      ${critHighList.length > CARD_BATCH ? `<button class="btn-load-more" onclick="loadMoreRiskCards('high',${CARD_BATCH})">Show ${critHighList.length - CARD_BATCH} more high-risk accounts</button>` : ''}
     </div>`
       : "";
 
@@ -734,9 +765,10 @@ function renderDashboard(data) {
       ? `
     <div id="risk-group-medium" class="risk-section">
       <div class="section-heading" style="margin-top:4px"><i class="bi bi-circle-fill" style="color:#f59e0b"></i> Medium-Risk Accounts <span class="count-badge">${mediumUsers.length}</span></div>
-      <div class="risk-cards">
-        ${mediumUsers.map((s) => renderRiskCard(s, true)).join("")}
+      <div class="risk-cards" id="risk-cards-medium">
+        ${mediumUsers.slice(0, CARD_BATCH).map((s) => renderRiskCard(s, true)).join("")}
       </div>
+      ${mediumUsers.length > CARD_BATCH ? `<button class="btn-load-more" onclick="loadMoreRiskCards('medium',${CARD_BATCH})">Show ${mediumUsers.length - CARD_BATCH} more medium-risk accounts</button>` : ''}
     </div>`
       : "";
 
@@ -744,9 +776,12 @@ function renderDashboard(data) {
     lowUsers.length > 0
       ? `
     <div id="risk-group-low" class="risk-section">
-      <div class="section-heading" style="margin-top:4px"><i class="bi bi-circle-fill" style="color:#10b981"></i> Low-Risk Accounts <span class="count-badge">${lowUsers.length}</span></div>
-      <div class="risk-cards">
-        ${lowUsers.map((s) => renderRiskCard(s, true)).join("")}
+      <div class="section-heading" style="margin-top:4px"><i class="bi bi-circle-fill" style="color:#10b981"></i> Low-Risk Accounts <span class="count-badge">${lowUsers.length}</span>
+        <button class="btn-section-toggle" style="font-size:11px;margin-left:8px;padding:2px 8px" onclick="toggleLowRisk(this)">Show</button>
+      </div>
+      <div class="risk-cards" id="risk-cards-low" style="display:none">
+        ${lowUsers.slice(0, CARD_BATCH).map((s) => renderRiskCard(s, true)).join("")}
+        ${lowUsers.length > CARD_BATCH ? `<button class="btn-load-more" onclick="loadMoreRiskCards('low',${CARD_BATCH})">Show ${lowUsers.length - CARD_BATCH} more low-risk accounts</button>` : ''}
       </div>
     </div>`
       : "";
@@ -1361,7 +1396,17 @@ function switchTab(tab) {
   const btn = document.querySelector(`.rnav-item[data-tab="${tab}"]`);
   if (btn) btn.classList.add("active");
   const panel = document.getElementById(`tab-${tab}`);
-  if (panel) panel.classList.add("active");
+  if (panel) {
+    panel.classList.add("active");
+    // Lazy-render tabs that were skipped during initial renderAnalysis
+    if (panel.dataset.lazy === '1' && state.analysisData) {
+      panel.removeAttribute('data-lazy');
+      const _d = state.analysisData;
+      if (tab === 'detections')  panel.innerHTML = buildDetectionsSection(_d.detections || []);
+      else if (tab === 'remediation') panel.innerHTML = renderRemediationTab(_d);
+      else if (tab === 'events')      panel.innerHTML = renderEventsTable(_d.events || []);
+    }
+  }
   // Scroll main panel to top when switching views
   const main = document.getElementById("main");
   if (main) main.scrollTop = 0;
