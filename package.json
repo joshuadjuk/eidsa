@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node --max-old-space-size=4096 server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "test": "node --test test/"
   },
   "dependencies": {
     "bootstrap-icons": "^1.13.1",

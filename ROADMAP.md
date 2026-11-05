@@ -18,7 +18,8 @@
 - [x] Detection: Device Fingerprint Anomaly (User-Agent baru + sukses dari luar negeri)
 - [x] Detection: OAuth Consent Phishing (first-ever app access dari foreign IP, T1528)
 - [x] Detection: Distributed Brute Force (10+ IP berbeda terhadap 1 user dalam 1 jam)
-- [x] Detection: MFA Method Downgrade (auth via SMS / tanpa MFA setelah baseline Authenticator App)
+- [x] Detection: MFA Method Downgrade (sign-in single-factor setelah baseline ≥10 sign-in dengan ≥70% MFA)
+- [x] Target User List — upload .txt (1 UPN per baris), switch "Filtered users / All logs" untuk membatasi analisis ke user tersebut
 - [x] Leaked Credential Cross-Match — upload breach list, flag user yang cocok, lokal
 - [x] Kill Chain Coverage Matrix — MITRE tactic grid per user, klik cell → highlight detection cards
 - [x] Attack Velocity Timeline — events-per-15min chart untuk top 5 foreign attacking IPs
@@ -61,3 +62,44 @@
 - [x] **Detection Sparklines** — Mini SVG 7-hari per detection card, keliatan tren serangan naik/turun tanpa buka tab lain.
 - [x] **User Risk Radar Chart** — Spider chart 6 sumbu (Geo, Auth Fail, Spray/Brute, Legacy/MFA, Device/Travel, Persistence)
 
+
+## Batch November 2026
+
+**Akurasi deteksi**
+- [x] Interrupt (50074/50076/KMSI/password-change) tidak lagi dihitung sebagai failed attempt
+- [x] Impossible Travel pakai `geoCoordinates` (level kota) + fallback centroid ~130 negara, min. jarak 300 km, speed tunable
+- [x] Time-of-Day pakai timezone workspace (default dari home country)
+- [x] Token Replay: grouping per ASN / prefix /16 / /48, pengecualian dual-stack IPv4+IPv6
+- [x] Rule berbasis window melaporkan setiap kampanye (bukan hanya yang pertama) + cakupan penuh kampanye
+- [x] MFA Downgrade berbasis `authenticationDetails` (single-factor atau SMS/voice setelah baseline Authenticator/FIDO)
+- [x] Detection: Entra Risky Sign-in (Identity Protection riskLevel / riskState)
+
+**Audit logs**
+- [x] Detection: MFA registration after compromise, OAuth consent grant (scope berisiko), privileged role assignment, app credential added — dikorelasikan dengan deteksi sign-in
+
+**Data & performa**
+- [x] Streaming JSON parser (normalisasi on-the-fly, recovery file terpotong, filter managedIdentity per event)
+- [x] Deduplikasi event by id lintas file
+- [x] Sliding window O(n), sort sekali per analisis
+- [x] Cache server LRU + TTL, cache key ikut setting workspace (edit trusted IP langsung berlaku)
+- [x] Cache hasil analisis di browser pindah ke IndexedDB
+- [x] Atomic write metadata workspace
+
+**Platform**
+- [x] Login + RBAC (viewer / analyst / admin), user management, rate-limit login
+- [x] Microsoft Graph pull (interactive, non-interactive, service principal, audit) + auto-sync terjadwal + retention
+- [x] Alert webhook (Teams / Slack / generic) dengan dedup
+- [x] Secret (Graph client secret, webhook URL) terenkripsi AES-256-GCM di disk
+- [x] Cross-tenant overview dashboard
+- [x] Target user list: mode All / Highlight / Filtered
+- [x] Drift baseline disimpan di server (shared tim)
+- [x] IOC export: Sentinel watchlist CSV + STIX 2.1
+- [x] IP enrichment via HTTPS (IPAPI_KEY) + AbuseIPDB opsional + opsi matikan enrichment
+- [x] Frontend dipecah jadi modul (`public/js/`), unit + API test (`npm test`)
+
+## Berikutnya
+
+- [ ] Beberapa user list bernama per workspace (VIP, Admin, Vendor)
+- [ ] Integrasi ticketing (ServiceNow / Jira)
+- [ ] Unified Audit Log (inbox rule / BEC)
+- [ ] GeoIP/ASN database lokal (MaxMind) agar enrichment tanpa layanan eksternal

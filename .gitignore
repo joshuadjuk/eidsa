@@ -25,3 +25,5 @@ desktop.ini
 
 # ── Misc ──────────────────────────────────────
 *.local
+# ── App data (users, secret key, IP cache) ────
+data/

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EIDSA – Sign in</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/bootstrap-icons/bootstrap-icons.min.css" />
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 16px; box-sizing: border-box; }
+    .login-card { width: 100%; max-width: 360px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 26px; box-shadow: var(--shadow); }
+    .login-card h1 { font-size: 22px; letter-spacing: 6px; margin: 0; background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .login-sub { font-size: 12px; color: var(--text3); margin: 4px 0 22px; }
+    .login-card label { display: block; font-size: 11px; color: var(--text2); margin: 12px 0 4px; }
+    .login-card input { width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; outline: none; }
+    .login-card input:focus { border-color: var(--accent); }
+    .login-card button { width: 100%; margin-top: 20px; }
+    .login-err { color: var(--danger); font-size: 12px; margin-top: 12px; min-height: 16px; }
+    .login-note { font-size: 11.5px; color: var(--text2); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; }
+  </style>
+</head>
+<body>
+  <form class="login-card" id="login-form">
+    <h1>EIDSA</h1>
+    <div class="login-sub">Entra ID Signin Analyzer</div>
+    <div id="setup-note" class="login-note" hidden>
+      <i class="bi bi-shield-lock"></i> First run — create the administrator account.
+    </div>
+    <label for="username">Username</label>
+    <input id="username" autocomplete="username" required />
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required />
+    <div id="confirm-wrap" hidden>
+      <label for="password2">Confirm password <span style="color:var(--text3)">(min. 10 characters)</span></label>
+      <input id="password2" type="password" autocomplete="new-password" />
+    </div>
+    <button class="btn-primary" type="submit" id="submit-btn">Sign in</button>
+    <div class="login-err" id="err"></div>
+  </form>
+
+  <script>
+    let setupMode = false;
+    if (localStorage.getItem("eidsa_theme") === "light") document.body.classList.add("theme-light");
+
+    fetch("/api/auth/status").then(r => r.json()).then(s => {
+      if (!s.enabled || s.user) { location.href = "/"; return; }
+      if (s.needsSetup) {
+        setupMode = true;
+        document.getElementById("setup-note").hidden = false;
+        document.getElementById("confirm-wrap").hidden = false;
+        document.getElementById("password").autocomplete = "new-password";
+        document.getElementById("submit-btn").textContent = "Create admin & sign in";
+      }
+      document.getElementById("username").focus();
+    });
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("err");
+      err.textContent = "";
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      if (setupMode && password !== document.getElementById("password2").value) {
+        err.textContent = "Passwords do not match";
+        return;
+      }
+      const res = await fetch(setupMode ? "/api/auth/setup" : "/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { err.textContent = body.error || "Sign-in failed"; return; }
+      location.href = "/";
+    });
+  </script>
+</body>
+</html>

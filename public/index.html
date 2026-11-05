@@ -12,7 +12,7 @@
   <div id="app">
     <!-- Sidebar -->
     <aside id="sidebar">
-      <div class="sidebar-header">
+      <div class="sidebar-header" onclick="showOverview()" style="cursor:pointer" title="All tenants overview">
         <div class="logo">EIDSA</div>
         <div class="logo-sub">Entra ID Signin Analyzer</div>
         <div class="logo-author">by JoshuaDjuk</div>
@@ -22,7 +22,8 @@
         <div id="workspace-list"></div>
       </div>
       <div class="sidebar-footer">
-        <button class="btn-new-workspace" onclick="showNewWorkspaceModal()">
+        <div id="user-box" class="user-box"></div>
+        <button class="btn-new-workspace need-admin" onclick="showNewWorkspaceModal()">
           <span>＋</span> New Workspace
         </button>
       </div>
@@ -51,6 +52,7 @@
             <div class="step-text">Run analysis & review detections</div>
           </div>
         </div>
+        <div id="overview" class="overview"></div>
       </div>
       <div id="workspace-view" class="hidden"></div>
     </main>
@@ -80,6 +82,9 @@
       <input id="ws-tenant" type="text" placeholder="e.g. contoso.onmicrosoft.com" />
       <label>Home Country Code</label>
       <input id="ws-homecountry" type="text" placeholder="ISO 2-letter, e.g. ID, US, SG" maxlength="2" style="text-transform:uppercase" />
+      <label>Timezone <span style="font-weight:400;color:var(--text3)">(working hours for off-hours detection)</span></label>
+      <input id="ws-timezone" type="text" list="tz-list" placeholder="e.g. Asia/Jakarta — empty = based on home country" />
+      <datalist id="tz-list"></datalist>
       <label>Trusted Countries <span style="font-weight:400;color:var(--text3)">(won't be flagged as foreign)</span></label>
       <div class="tag-input-wrap" id="trusted-tags" onclick="document.getElementById('trusted-input').focus()">
         <input id="trusted-input" type="text" placeholder="Type code + Enter, e.g. SG" maxlength="2"
@@ -113,6 +118,10 @@
             <label class="tuning-label">Enumeration min users</label>
             <input id="tune-enum-users" type="number" min="3" max="100" value="10" class="tuning-input" />
           </div>
+          <div class="tuning-row">
+            <label class="tuning-label">Impossible travel max speed (km/h)</label>
+            <input id="tune-travel-speed" type="number" min="200" max="2000" value="900" class="tuning-input" />
+          </div>
         </div>
       </details>
       <div class="modal-actions">
@@ -124,6 +133,24 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="app.js"></script>
+  <!-- Classic scripts sharing one global scope — order matters -->
+  <script src="js/core.js"></script>
+  <script src="js/workspace.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/detections.js"></script>
+  <script src="js/visuals.js"></script>
+  <script src="js/investigation.js"></script>
+  <script src="js/workspace-modal.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/report-pdf.js"></script>
+  <script src="js/charts-advanced.js"></script>
+  <script src="js/kql-exports.js"></script>
+  <script src="js/pivot.js"></script>
+  <script src="js/misc.js"></script>
+  <script src="js/auth-ui.js"></script>
+  <script src="js/overview.js"></script>
+  <script src="js/integrations.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
